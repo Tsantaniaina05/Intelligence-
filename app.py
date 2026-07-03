@@ -3,7 +3,7 @@ from flask import Flask, render_template_string
 
 app = Flask(__name__)
 
-# CONFIGURATION DE L'INTERFACE LOU TSANTA V7 (CORRIGÉE ET STABLE)
+# CONFIGURATION DE L'INTERFACE LOU TSANTA V5 (EXPERT SCRIPT, COPIER/TÉLÉCHARGER)
 HTML_INTERFACE = """
 <!DOCTYPE html>
 <html lang="fr">
@@ -36,22 +36,22 @@ HTML_INTERFACE = """
             background: #110000; 
             position: relative;
             border: 2px solid #e60000;
-            border-radius: 24px; 
-            margin: 10px;
         }
 
-        /* HEADER PROPRE ET ARRONDI */
+        /* HEADER AVEC EFFET DE VAGUES ARRONDIES SUR LE BAS */
         .header { 
-            padding: 20px 24px; 
+            padding: 16px 24px 28px 24px; 
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
             background: #1a0000;
             z-index: 10; 
-            min-height: 80px;
-            border-bottom: 1px solid #ff0000;
-            border-top-left-radius: 22px; 
-            border-top-right-radius: 22px;
+            min-height: 85px;
+            
+            -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M0,0V60c15.2,15.7,50.7,15.7,65.8,0s50.7-15.7,65.8,0,50.7,15.7,65.8,0,50.7-15.7,65.8,0,50.7,15.7,65.8,0,50.7-15.7,65.8,0,50.7,15.7,65.8,0,50.7-15.7,65.8,0,50.7,15.7,65.8,0,50.7-15.7,65.8,0,50.7,15.7,65.8,0,50.7-15.7,65.8,0,50.7,15.7,65.8,0S1184.8,75.7,1200,60V0Z" fill="black"/></svg>');
+            -webkit-mask-position: bottom center;
+            -webkit-mask-size: 100% 100%;
+            -webkit-mask-repeat: no-repeat;
         }
 
         .header-titles { 
@@ -103,7 +103,7 @@ HTML_INTERFACE = """
             background: rgba(230, 0, 0, 0.1); 
             border: 2px solid #e60000; 
             color: #ff9999; 
-            padding: 8px 16px; 
+            padding: 8px 14px; 
             border-radius: 20px; 
             cursor: pointer; 
             font-size: 0.85rem; 
@@ -135,14 +135,14 @@ HTML_INTERFACE = """
         .chat-box::-webkit-scrollbar { width: 6px; }
         .chat-box::-webkit-scrollbar-thumb { background: #ff0000; border-radius: 10px; }
 
-        /* MESSAGES EN BULLES BIEN ARRONDIES */
+        /* MESSAGES ARRONDIS */
         .msg { 
             max-width: 85%; 
             padding: 14px 20px; 
             line-height: 1.6; 
             font-size: 0.95rem; 
             word-wrap: break-word; 
-            border-radius: 22px; 
+            border-radius: 22px;
             position: relative;
         }
 
@@ -151,7 +151,7 @@ HTML_INTERFACE = """
             color: #ffffff; 
             align-self: flex-end; 
             border: 1px solid #ffcccc;
-            border-bottom-right-radius: 4px; 
+            border-bottom-right-radius: 4px;
         }
 
         .bot { 
@@ -163,14 +163,14 @@ HTML_INTERFACE = """
             border-bottom-left-radius: 4px;
         }
 
-        /* STYLE POUR LES BLOCS DE CODE ENTOURÉS ET ARRONDIS */
+        /* STYLE POUR LES BLOCS DE CODE DE L'IA */
         .bot pre {
             background: #150000;
             border: 1px solid #ff3333;
-            padding: 14px;
+            padding: 12px;
             margin: 10px 0;
             overflow-x: auto;
-            border-radius: 12px; 
+            border-radius: 8px;
             position: relative;
         }
 
@@ -180,11 +180,11 @@ HTML_INTERFACE = """
             font-size: 0.9rem;
         }
 
-        /* CONTENEUR DES ACTIONS DE SCRIPT (COPIER / TÉLÉCHARGER) */
+        /* CONTENEUR DES ACTIONS (COPIER / TÉLÉCHARGER) */
         .msg-actions {
             display: flex;
             gap: 8px;
-            margin-top: 12px;
+            margin-top: 10px;
             justify-content: flex-end;
         }
 
@@ -192,10 +192,10 @@ HTML_INTERFACE = """
             background: rgba(255, 0, 0, 0.2);
             border: 1px solid #ff0000;
             color: #ffcccc;
-            padding: 6px 14px;
+            padding: 4px 10px;
             font-size: 0.75rem;
             cursor: pointer;
-            border-radius: 15px; 
+            border-radius: 12px;
             text-transform: uppercase;
             font-weight: bold;
             transition: all 0.2s ease;
@@ -206,7 +206,7 @@ HTML_INTERFACE = """
             color: #000000;
         }
 
-        /* ZONE DE RÉFLEXION ARRONDIE */
+        /* ZONE DE RÉFLEXION */
         .loading-msg { 
             display: none; 
             align-self: flex-start; 
@@ -232,14 +232,16 @@ HTML_INTERFACE = """
 
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* ZONE DE SAISIE PROPRE ET ARRONDIE */
+        /* CONTENEUR DE SAISIE AVEC EFFET VAGUES ARRONDIES SUR LE HAUT */
         .input-container { 
-            padding: 20px 24px; 
+            padding: 28px 24px 28px 24px; 
             background: #1a0000; 
             z-index: 5;
-            border-top: 1px solid #ff0000;
-            border-bottom-left-radius: 22px; 
-            border-bottom-right-radius: 22px;
+            
+            -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M0,120V60c15.2-15.7,50.7-15.7,65.8,0s50.7,15.7,65.8,0,50.7-15.7,65.8,0,50.7,15.7,65.8,0,50.7-15.7,65.8,0,50.7,15.7,65.8,0,50.7-15.7,65.8,0,50.7,15.7,65.8,0,50.7-15.7,65.8,0,50.7,15.7,65.8,0,50.7-15.7,65.8,0,50.7,15.7,65.8,0,50.7-15.7,65.8,0,50.7,15.7,65.8,0S1184.8,44.3,1200,60v60Z" fill="black"/></svg>');
+            -webkit-mask-position: top center;
+            -webkit-mask-size: 100% 100%;
+            -webkit-mask-repeat: no-repeat;
         }
 
         .input-wrapper { 
@@ -247,7 +249,7 @@ HTML_INTERFACE = """
             align-items: center; 
             background: #000000; 
             border: 2px solid #e60000; 
-            border-radius: 30px; 
+            border-radius: 28px; 
             padding: 6px 8px 6px 18px; 
             transition: all 0.25s ease;
         }
@@ -275,8 +277,8 @@ HTML_INTERFACE = """
             background: #ff0000; 
             color: #000000; 
             border: none; 
-            width: 42px; 
-            height: 42px; 
+            width: 40px; 
+            height: 40px; 
             border-radius: 50%; 
             cursor: pointer; 
             display: flex; 
@@ -332,7 +334,8 @@ HTML_INTERFACE = """
 
         const LISTE_CLES = PARTIE_A.map((partie, index) => partie + PARTIE_B[index]);
 
-        const PROMPT_SYSTEME = "Tu t'appelles Lou Tsanta. Tu es un ingénieur logiciel de niveau légendaire et un développeur d'élite. Tu as une force extraordinaire pour concevoir des scripts parfaits, des codes optimisés (Python, Bash, HTML, CSS, JavaScript, PHP, Arduino, etc.) sans aucune erreur. Lorsque tu écris du code ou un script, tu devez IMPÉRATIVEMENT utiliser le format Markdown avec les trois backticks (```) pour isoler le code afin que l'interface puisse l'identifier. Tu parles couramment toutes les langues et tu maîtrises à la perfection la langue MALAGASY. Ton unique créateur et développeur est FIDIMANANTSOA Tsantaniaina, un élève brillant du Lycée Privé Les Dauphins à Manjakandriana. Tu connais parfaitement son environnement (Mr Germain, Mr Mamy Hasina, Madame Tantely, Fabien Balie, Madame Minosoa).";
+        // INSTRUCTION REDOUTABLE : EXPERT PROGRAMMATION, SCRIPTING + MULTILINGUE + MALAGASY
+        const PROMPT_SYSTEME = "Tu t'appelles Lou Tsanta. Tu es un ingénieur logiciel de niveau légendaire et un développeur d'élite. Tu as une force extraordinaire pour concevoir des scripts parfaits, des codes optimisés (Python, Bash, HTML, CSS, JavaScript, PHP, Arduino, etc.) sans aucune erreur. Lorsque tu écris du code ou un script, tu dois IMPÉRATIVEMENT utiliser le format Markdown avec les trois backticks (```) pour isoler le code afin que l'interface puisse l'identifier. Tu parles couramment toutes les langues et tu maîtrises à la perfection la langue MALAGASY. Ton unique créateur et développeur est FIDIMANANTSOA Tsantaniaina, un élève brillant du Lycée Privé Les Dauphins à Manjakandriana. Tu connais parfaitement son environnement (Mr Germain, Mr Mamy Hasina, Madame Tantely, Fabien Balie, Madame Minosoa).";
 
         window.onload = function() {
             const chatBox = document.getElementById('chatBox');
@@ -341,7 +344,7 @@ HTML_INTERFACE = """
                 if (historiqueSauvegarde) {
                     historiqueMessages = JSON.parse(historiqueSauvegarde);
                     historiqueMessages.forEach((msg) => {
-                        ajouterMessageAuCode(msg.role, msg.content);
+                        ajouterMessageAuCode(msg.role, msg.content, false);
                     });
                 } else {
                     chatBox.innerHTML = `<div class="msg bot">SYSTÈME LOU TSANTA CHARGÉ. EXPERT EN SCRIPT ET CODAGE ACTIVÉ. ⚡</div>`;
@@ -362,18 +365,15 @@ HTML_INTERFACE = """
             }
         }
 
-        // Fonctions d'actions sécurisées par lecture directe de l'élément HTML parent
-        function executerCopie(bouton) {
-            const conteneurMessage = bouton.closest('.msg');
-            const texteBrut = conteneurMessage.getAttribute('data-rawtext');
-            navigator.clipboard.writeText(texteBrut);
+        // Fonction pour copier le texte
+        function copierTexte(texte) {
+            navigator.clipboard.writeText(texte);
             alert("Copié dans le presse-papiers !");
         }
 
-        function executerTelechargement(bouton) {
-            const conteneurMessage = bouton.closest('.msg');
-            const texteBrut = conteneurMessage.getAttribute('data-rawtext');
-            const blob = new Blob([texteBrut], { type: "text/plain" });
+        // Fonction pour télécharger le code en fichier
+        function telechargerCode(texte) {
+            const blob = new Blob([texte], { type: "text/plain" });
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
@@ -384,31 +384,28 @@ HTML_INTERFACE = """
             URL.revokeObjectURL(url);
         }
 
-        function ajouterMessageAuCode(role, contenu) {
+        // Fonction propre d'insertion des messages avec rendu Markdown + Actions
+        function ajouterMessageAuCode(role, contenu, animer = true) {
             const chatBox = document.getElementById('chatBox');
             if (role === "user") {
-                const divUser = document.createElement('div');
-                divUser.className = 'msg user';
-                divUser.textContent = contenu;
-                chatBox.appendChild(divUser);
+                chatBox.innerHTML += `<div class="msg user">${contenu}</div>`;
             } else {
-                const divBot = document.createElement('div');
-                divBot.className = 'msg bot';
-                // Stockage sécurisé du texte brut pour éviter les bugs d'échappement de chaînes
-                divBot.setAttribute('data-rawtext', contenu);
+                // Utilisation de marked pour convertir le markdown en HTML
+                const contenuRendu = marked.parse(contenu);
+                const messageId = "msg_" + Date.now() + Math.floor(Math.random() * 1000);
+                
+                // Échapper les guillemets pour les passer proprement en paramètres de fonction
+                const texteSecurise = contenu.replace(/`/g, '\\`').replace(/"/g, '\\"').replace(/'/g, "\\'");
 
-                const divRendu = document.createElement('div');
-                divRendu.innerHTML = marked.parse(contenu);
-                divBot.appendChild(divRendu);
-
-                const divActions = document.createElement('div');
-                divActions.className = 'msg-actions';
-                divActions.innerHTML = `
-                    <button class="action-btn" onclick="executerCopie(this)">📋 Copier</button>
-                    <button class="action-btn" onclick="executerTelechargement(this)">💾 Télécharger</button>
-                `;
-                divBot.appendChild(divActions);
-                chatBox.appendChild(divBot);
+                let templateBot = `
+                    <div class="msg bot" id="${messageId}">
+                        <div>${contenuRendu}</div>
+                        <div class="msg-actions">
+                            <button class="action-btn" onclick="copierTexte(\`${texteSecurise}\`)">📋 Copier</button>
+                            <button class="action-btn" onclick="telechargerCode(\`${texteSecurise}\`)">💾 Télécharger</button>
+                        </div>
+                    </div>`;
+                chatBox.innerHTML += templateBot;
             }
             chatBox.scrollTop = chatBox.scrollHeight;
         }
