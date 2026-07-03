@@ -3,7 +3,7 @@ from flask import Flask, render_template_string
 
 app = Flask(__name__)
 
-# CONFIGURATION DE L'INTERFACE LOU TSANTA PREMIUM V2
+# CONFIGURATION DE L'INTERFACE LOU TSANTA PREMIUM V2 (CORRIGÉE ET STABLE)
 HTML_INTERFACE = """
 <!DOCTYPE html>
 <html lang="fr">
@@ -11,6 +11,7 @@ HTML_INTERFACE = """
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Lou Tsanta — Assistant Premium</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
         
@@ -114,7 +115,7 @@ HTML_INTERFACE = """
             flex-direction: column; 
             gap: 20px; 
             scroll-behavior: smooth;
-            background-linear: linear-gradient(180deg, #111827 0%, #0f1522 100%);
+            background: linear-gradient(180deg, #111827 0%, #0f1522 100%);
         }
 
         .chat-box::-webkit-scrollbar { width: 5px; }
@@ -128,7 +129,6 @@ HTML_INTERFACE = """
             line-height: 1.55; 
             font-size: 0.95rem; 
             word-wrap: break-word; 
-            white-space: pre-wrap; 
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
@@ -145,6 +145,46 @@ HTML_INTERFACE = """
             align-self: flex-start; 
             border-bottom-left-radius: 4px; 
             border: 1px solid rgba(255, 255, 255, 0.04); 
+        }
+
+        /* AFFICHAGE DES BLOCS DE CODE INTERNES */
+        .bot pre {
+            background: #0b0f17;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 12px;
+            margin: 8px 0;
+            overflow-x: auto;
+            border-radius: 8px;
+        }
+
+        .bot code {
+            font-family: 'Courier New', Courier, monospace;
+            color: #f67280;
+            font-size: 0.9rem;
+        }
+
+        /* ZONE BOUTON COPIER DISCRET */
+        .msg-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 8px;
+        }
+
+        .copy-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #9ca3af;
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .copy-btn:hover {
+            background: #00adb5;
+            color: #ffffff;
+            border-color: #00adb5;
         }
 
         /* ZONE DE RÉFLEXION DE L'IA */
@@ -274,38 +314,55 @@ HTML_INTERFACE = """
 
         const LISTE_CLES = PARTIE_A.map((partie, index) => partie + PARTIE_B[index]);
 
-        const PROMPT_SYSTEME = "Tu t'appelles Lou Tsanta. Tu es une IA d'élite, un développeur chevronné de niveau légendaire et un tuteur d'étude. Tu as une capacité exceptionnelle pour générer des scripts parfaits et du code propre (Python, Bash, PHP, JS, etc.) sans erreurs. Tu devez obligatoirement utiliser les blocs de code Markdown (avec ```) pour isoler tes codes. Ton unique créateur et développeur est FIDIMANANTSOA Tsantaniaina, un élève brillant du Lycée Privé Les Dauphins à Manjakandriana. Tu connais parfaitement son environnement et ses professeurs : son professeur de Mathématiques est Mr Germain, son professeur de Physique-Chimie (PC) est Mr Mamy Hasina, son professeur d'Histoire-Géographie est Madame Tantely, son professeur de Philosophie est Fabien Balie, et son professeur d'Anglais est Madame Minosoa. Tu es poli, amical et ultra-performant.";
+        const PROMPT_SYSTEME = "Tu t'appelles Lou Tsanta. Tu es une IA d'élite, un développeur chevronné de niveau légendaire et un tuteur d'étude. Tu as une capacité exceptionnelle pour générer des scripts parfaits et du code propre (Python, Bash, PHP, JS, etc.) sans erreurs. Tu dois obligatoirement utiliser les blocs de code Markdown pour isoler tes codes. Ton unique créateur et développeur est FIDIMANANTSOA Tsantaniaina, un élève brillant du Lycée Privé Les Dauphins à Manjakandriana. Tu connais parfaitement son environnement et ses professeurs : son professeur de Mathématiques est Mr Germain, son professeur de Physique-Chimie (PC) est Mr Mamy Hasina, son professeur d'Histoire-Géographie est Madame Tantely, son professeur de Philosophie est Fabien Balie, et son professeur d'Anglais est Madame Minosoa. Tu es poli, amical et ultra-performant.";
 
         window.onload = function() {
             const chatBox = document.getElementById('chatBox');
             try {
-                const historiqueSauvegarde = localStorage.getItem('loutsanta_chat_history');
-                if (historiqueSauvegarde) {
-                    historiqueMessages = JSON.parse(historiqueSauvegarde);
-                    historiqueMessages.forEach((msg) => {
-                        if (msg.role === "user") {
-                            chatBox.innerHTML += `<div class="msg user">${msg.content}</div>`;
-                        } else if (msg.role === "assistant") {
-                            chatBox.innerHTML += `<div class="msg bot">${msg.content}</div>`;
-                        }
-                    });
-                } else {
-                    chatBox.innerHTML = `<div class="msg bot">Bonjour ! Je suis <b>Lou Tsanta</b>, ton compagnon IA. Comment puis-je t'aider aujourd'hui, Tsanta ? ⚡</div>`;
-                }
+                localStorage.clear(); // Prévient les plantages liés à d'anciens cookies ou stockage corrompu
+                afficherMessage("assistant", "Bonjour ! Je suis **Lou Tsanta**, ton compagnon IA et expert en programmation. Comment puis-je t'aider aujourd'hui, Tsanta ? ⚡");
             } catch (e) {
-                chatBox.innerHTML = `<div class="msg bot">Bonjour ! Je suis <b>Lou Tsanta</b>. Pose-moi tes questions ! ⚡</div>`;
+                chatBox.innerHTML = `<div class="msg bot">Bonjour ! Je suis Lou Tsanta. Pose-moi tes questions ! ⚡</div>`;
             }
-            chatBox.scrollTop = chatBox.scrollHeight;
         };
 
         function reinitialiserDiscussion() {
-            try {
-                localStorage.removeItem('loutsanta_chat_history');
-                historiqueMessages = [];
-                document.getElementById('chatBox').innerHTML = `<div class="msg bot">Discussion réinitialisée ! Je suis Lou Tsanta. ⚡</div>`;
-            } catch(e) {
-                location.reload();
+            localStorage.clear();
+            historiqueMessages = [];
+            document.getElementById('chatBox').innerHTML = `<div class="msg bot">Discussion réinitialisée ! Je suis Lou Tsanta. ⚡</div>`;
+        }
+
+        function executerCopieMessage(bouton) {
+            const conteneur = bouton.closest('.msg');
+            const texteBrut = conteneur.getAttribute('data-raw');
+            navigator.clipboard.writeText(texteBrut);
+            bouton.textContent = "✓ Copié !";
+            setTimeout(() => { bouton.textContent = "📋 Copier"; }, 2000);
+        }
+
+        function afficherMessage(role, contenu) {
+            const chatBox = document.getElementById('chatBox');
+            const divMsg = document.createElement('div');
+            
+            if (role === "user") {
+                divMsg.className = 'msg user';
+                divMsg.textContent = contenu;
+            } else {
+                divMsg.className = 'msg bot';
+                divMsg.setAttribute('data-raw', contenu);
+
+                const divContenu = document.createElement('div');
+                divContenu.innerHTML = marked.parse(contenu);
+                divMsg.appendChild(divContenu);
+
+                const divActions = document.createElement('div');
+                divActions.className = 'msg-actions';
+                divActions.innerHTML = `<button class="copy-btn" onclick="executerCopieMessage(this)">📋 Copier</button>`;
+                divMsg.appendChild(divActions);
             }
+            
+            chatBox.appendChild(divMsg);
+            chatBox.scrollTop = chatBox.scrollHeight;
         }
 
         async function appelerGroqDirect(payload) {
@@ -337,7 +394,8 @@ HTML_INTERFACE = """
             const message = input.value.trim();
             if (!message) return;
 
-            chatBox.innerHTML += `<div class="msg user">${message}</div>`;
+            // Affichage direct du message utilisateur dans le DOM
+            afficherMessage("user", message);
             historiqueMessages.push({"role": "user", "content": message});
 
             input.value = '';
@@ -353,17 +411,17 @@ HTML_INTERFACE = """
 
             const resultat = await appelerGroqDirect(payload);
             
-            if (document.getElementById(loadingId)) document.getElementById(loadingId).remove();
+            const loadingEl = document.getElementById(loadingId);
+            if (loadingEl) loadingEl.remove();
 
             if (resultat.succes) {
-                chatBox.innerHTML += `<div class="msg bot">${resultat.data}</div>`;
+                afficherMessage("assistant", resultat.data);
                 historiqueMessages.push({"role": "assistant", "content": resultat.data});
-                localStorage.setItem('loutsanta_chat_history', JSON.stringify(historiqueMessages));
             } else {
                 chatBox.innerHTML += `
                     <div class="msg bot">
-                        ❌ <b>Toutes les clés sont saturées</b><br>
-                        Le quota maximum de requêtes a été atteint. Patiente 1 minute, puis réessaye !
+                        ❌ <b>Erreur de connexion</b><br>
+                        Avereno azafady afaka 60 segondra.
                     </div>`;
             }
             chatBox.scrollTop = chatBox.scrollHeight;
