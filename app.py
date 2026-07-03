@@ -3,7 +3,7 @@ from flask import Flask, render_template_string
 
 app = Flask(__name__)
 
-# CONFIGURATION DE L'INTERFACE LOU TSANTA PREMIUM V2 (CORRIGÉE ET STABLE)
+# CONFIGURATION DE L'INTERFACE LOU TSANTA PREMIUM V2 (AVEC BLOCS DE CODE ISOLÉS)
 HTML_INTERFACE = """
 <!DOCTYPE html>
 <html lang="fr">
@@ -126,7 +126,7 @@ HTML_INTERFACE = """
             max-width: 82%; 
             padding: 14px 18px; 
             border-radius: 20px; 
-            line-height: 1.55; 
+            line-height: 1.6; 
             font-size: 0.95rem; 
             word-wrap: break-word; 
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
@@ -137,6 +137,7 @@ HTML_INTERFACE = """
             color: #ffffff; 
             align-self: flex-end; 
             border-bottom-right-radius: 4px; 
+            white-space: pre-wrap;
         }
 
         .bot { 
@@ -147,20 +148,32 @@ HTML_INTERFACE = """
             border: 1px solid rgba(255, 255, 255, 0.04); 
         }
 
-        /* AFFICHAGE DES BLOCS DE CODE INTERNES */
+        /* ISOLATION ET STYLISATION DES BLOCS DE CODE PARFAITE */
         .bot pre {
-            background: #0b0f17;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 12px;
-            margin: 8px 0;
-            overflow-x: auto;
-            border-radius: 8px;
+            background: #0b0f17 !important;
+            border: 1px solid rgba(255, 255, 255, 0.12) !important;
+            padding: 14px !important;
+            margin: 12px 0 !important;
+            overflow-x: auto !important;
+            border-radius: 10px !important;
+            display: block !important;
+            width: 100% !important;
         }
 
         .bot code {
-            font-family: 'Courier New', Courier, monospace;
-            color: #f67280;
-            font-size: 0.9rem;
+            font-family: 'Courier New', Courier, monospace !important;
+            color: #e2e8f0 !important;
+            font-size: 0.88rem !important;
+            background: transparent !important;
+            padding: 0 !important;
+        }
+        
+        /* Code en ligne (pas dans un bloc pre) */
+        .bot p code {
+            background: #0b0f17 !important;
+            color: #f67280 !important;
+            padding: 2px 6px !important;
+            border-radius: 4px !important;
         }
 
         /* ZONE BOUTON COPIER DISCRET */
@@ -302,6 +315,12 @@ HTML_INTERFACE = """
     <script>
         let historiqueMessages = [];
 
+        // Configuration stricte de Marked pour forcer le respect des sauts de ligne Markdown
+        marked.setOptions({
+            breaks: true,
+            gfm: true
+        });
+
         const PARTIE_A = [
             "gsk_FfwvUhtrQe0buPGq1ZbC", "gsk_jkmG1w3fYMeIPW3zkcIA", "gsk_k5oZjjcuEYcySKmAbQD6", "gsk_fmdEXujMozLZtcosqjue",
             "gsk_T9OSlCCbyz348SgGiqqq", "gsk_PUELW9UBJfOu80IKlOpA", "gsk_7BDECcx7arZ3IssuLKCw", "gsk_B6tXb5B57pnkb1x8V8Ua"
@@ -314,15 +333,14 @@ HTML_INTERFACE = """
 
         const LISTE_CLES = PARTIE_A.map((partie, index) => partie + PARTIE_B[index]);
 
-        const PROMPT_SYSTEME = "Tu t'appelles Lou Tsanta. Tu es une IA d'élite, un développeur chevronné de niveau légendaire et un tuteur d'étude. Tu as une capacité exceptionnelle pour générer des scripts parfaits et du code propre (Python, Bash, PHP, JS, etc.) sans erreurs. Tu dois obligatoirement utiliser les blocs de code Markdown pour isoler tes codes. Ton unique créateur et développeur est FIDIMANANTSOA Tsantaniaina, un élève brillant du Lycée Privé Les Dauphins à Manjakandriana. Tu connais parfaitement son environnement et ses professeurs : son professeur de Mathématiques est Mr Germain, son professeur de Physique-Chimie (PC) est Mr Mamy Hasina, son professeur d'Histoire-Géographie est Madame Tantely, son professeur de Philosophie est Fabien Balie, et son professeur d'Anglais est Madame Minosoa. Tu es poli, amical et ultra-performant.";
+        const PROMPT_SYSTEME = "Tu t'appelles Lou Tsanta. Tu es une IA d'élite, un développeur chevronné de niveau légendaire et un tuteur d'étude. Tu as une capacité exceptionnelle pour générer des scripts parfaits et du code propre (Python, Bash, PHP, JS, etc.) sans erreurs. Tu dois obligatoirement utiliser les blocs de code Markdown (avec triple backticks) pour isoler tes codes. Ton unique créateur et développeur est FIDIMANANTSOA Tsantaniaina, un élève brillant du Lycée Privé Les Dauphins à Manjakandriana. Tu connais parfaitement son environnement et ses professeurs : son professeur de Mathématiques est Mr Germain, son professeur de Physique-Chimie (PC) est Mr Mamy Hasina, son professeur d'Histoire-Géographie est Madame Tantely, son professeur de Philosophie est Fabien Balie, et son professeur d'Anglais est Madame Minosoa. Tu es poli, amical et ultra-performant.";
 
         window.onload = function() {
-            const chatBox = document.getElementById('chatBox');
             try {
-                localStorage.clear(); // Prévient les plantages liés à d'anciens cookies ou stockage corrompu
+                localStorage.clear();
                 afficherMessage("assistant", "Bonjour ! Je suis **Lou Tsanta**, ton compagnon IA et expert en programmation. Comment puis-je t'aider aujourd'hui, Tsanta ? ⚡");
             } catch (e) {
-                chatBox.innerHTML = `<div class="msg bot">Bonjour ! Je suis Lou Tsanta. Pose-moi tes questions ! ⚡</div>`;
+                document.getElementById('chatBox').innerHTML = `<div class="msg bot">Bonjour ! Je suis Lou Tsanta. Pose-moi tes questions ! ⚡</div>`;
             }
         };
 
@@ -352,6 +370,7 @@ HTML_INTERFACE = """
                 divMsg.setAttribute('data-raw', contenu);
 
                 const divContenu = document.createElement('div');
+                // Analyse et compilation du Markdown de l'IA via Marked
                 divContenu.innerHTML = marked.parse(contenu);
                 divMsg.appendChild(divContenu);
 
@@ -394,7 +413,6 @@ HTML_INTERFACE = """
             const message = input.value.trim();
             if (!message) return;
 
-            // Affichage direct du message utilisateur dans le DOM
             afficherMessage("user", message);
             historiqueMessages.push({"role": "user", "content": message});
 
