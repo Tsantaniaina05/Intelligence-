@@ -3,22 +3,20 @@ from flask import Flask, render_template_string
 
 app = Flask(__name__)
 
-# CONFIGURATION DE L'INTERFACE LOU TSANTA V5 (EXPERT SCRIPT, COPIER/TÉLÉCHARGER)
+# CONFIGURATION DE L'INTERFACE LOU TSANTA PREMIUM V2
 HTML_INTERFACE = """
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lou Tsanta — Cyber-Red Pro</title>
-    <!-- Chargement de Marked.js pour afficher les blocs de code proprement -->
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <title>Lou Tsanta — Assistant Premium</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Courier New', Courier, monospace; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
         
         body { 
-            background-color: #050000; 
-            color: #ffcccc; 
+            background-color: #0b0f17; 
+            color: #e2e8f0; 
             display: flex; 
             justify-content: center; 
             height: 100vh; 
@@ -33,25 +31,21 @@ HTML_INTERFACE = """
             flex-direction: column; 
             height: 100vh; 
             height: 100dvh; 
-            background: #110000; 
+            background: #111827; 
             position: relative;
-            border: 2px solid #e60000;
         }
 
-        /* HEADER AVEC EFFET DE VAGUES ARRONDIES SUR LE BAS */
+        /* HEADER PREMIUM STYLE CLAUDE/CHATGPT */
         .header { 
-            padding: 16px 24px 28px 24px; 
+            padding: 16px 24px; 
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
-            background: #1a0000;
+            background: rgba(17, 24, 39, 0.85); 
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06); 
             z-index: 10; 
-            min-height: 85px;
-            
-            -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M0,0V60c15.2,15.7,50.7,15.7,65.8,0s50.7-15.7,65.8,0,50.7,15.7,65.8,0,50.7-15.7,65.8,0,50.7,15.7,65.8,0,50.7-15.7,65.8,0,50.7,15.7,65.8,0,50.7-15.7,65.8,0,50.7,15.7,65.8,0,50.7-15.7,65.8,0,50.7,15.7,65.8,0,50.7-15.7,65.8,0,50.7,15.7,65.8,0S1184.8,75.7,1200,60V0Z" fill="black"/></svg>');
-            -webkit-mask-position: bottom center;
-            -webkit-mask-size: 100% 100%;
-            -webkit-mask-repeat: no-repeat;
+            min-height: 75px;
         }
 
         .header-titles { 
@@ -63,62 +57,52 @@ HTML_INTERFACE = """
         .header-main {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
         .header h1 { 
-            font-size: 1.3rem; 
-            color: #ff0000; 
-            font-weight: 700; 
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            text-shadow: 0 0 10px #ff0000;
+            font-size: 1.2rem; 
+            color: #ffffff; 
+            font-weight: 600; 
+            letter-spacing: -0.3px;
         }
 
         .status-dot {
-            width: 10px;
-            height: 10px;
-            background-color: #ff0000;
+            width: 8px;
+            height: 8px;
+            background-color: #10b981;
             border-radius: 50%;
             display: inline-block;
-            box-shadow: 0 0 15px #ff0000;
-            animation: pulse 1.5s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { box-shadow: 0 0 5px #ff0000; }
-            50% { box-shadow: 0 0 20px #ff0000; }
-            100% { box-shadow: 0 0 5px #ff0000; }
+            box-shadow: 0 0 8px #10b981;
         }
 
         .header .author { 
-            font-size: 0.75rem; 
-            color: #ffcccc; 
-            margin-top: 4px; 
+            font-size: 0.72rem; 
+            color: #9ca3af; 
+            margin-top: 2px; 
             font-weight: 400; 
-            opacity: 0.9; 
+            opacity: 0.8; 
         }
 
         .clear-btn { 
-            background: rgba(230, 0, 0, 0.1); 
-            border: 2px solid #e60000; 
-            color: #ff9999; 
+            background: rgba(255, 255, 255, 0.04); 
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+            color: #9ca3af; 
             padding: 8px 14px; 
-            border-radius: 20px; 
+            border-radius: 16px; 
             cursor: pointer; 
-            font-size: 0.85rem; 
+            font-size: 0.8rem; 
             display: flex; 
             align-items: center; 
             gap: 6px; 
             transition: all 0.2s ease; 
-            font-weight: 600; 
-            text-transform: uppercase;
+            font-weight: 500; 
         }
 
         .clear-btn:hover { 
-            background: #ff0000; 
-            color: #000000; 
-            box-shadow: 0 0 15px #ff0000;
+            background: rgba(239, 68, 68, 0.15); 
+            color: #ef4444; 
+            border-color: rgba(239, 68, 68, 0.25); 
         }
 
         /* ZONE DE DISCUSSION */
@@ -130,169 +114,125 @@ HTML_INTERFACE = """
             flex-direction: column; 
             gap: 20px; 
             scroll-behavior: smooth;
+            background-linear: linear-gradient(180deg, #111827 0%, #0f1522 100%);
         }
 
-        .chat-box::-webkit-scrollbar { width: 6px; }
-        .chat-box::-webkit-scrollbar-thumb { background: #ff0000; border-radius: 10px; }
+        .chat-box::-webkit-scrollbar { width: 5px; }
+        .chat-box::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
 
-        /* MESSAGES ARRONDIS */
+        /* DESIGN DES BULLES DE MESSAGES */
         .msg { 
-            max-width: 85%; 
-            padding: 14px 20px; 
-            line-height: 1.6; 
+            max-width: 82%; 
+            padding: 14px 18px; 
+            border-radius: 20px; 
+            line-height: 1.55; 
             font-size: 0.95rem; 
             word-wrap: break-word; 
-            border-radius: 22px;
-            position: relative;
+            white-space: pre-wrap; 
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
         .user { 
-            background: #e60000; 
+            background: #00adb5; 
             color: #ffffff; 
             align-self: flex-end; 
-            border: 1px solid #ffcccc;
-            border-bottom-right-radius: 4px;
+            border-bottom-right-radius: 4px; 
         }
 
         .bot { 
-            background: #000000; 
-            color: #ffcccc; 
+            background: #1f2937; 
+            color: #f1f5f9; 
             align-self: flex-start; 
-            border: 1px solid #ff0000; 
-            box-shadow: inset 0 0 15px rgba(255, 0, 0, 0.2);
-            border-bottom-left-radius: 4px;
+            border-bottom-left-radius: 4px; 
+            border: 1px solid rgba(255, 255, 255, 0.04); 
         }
 
-        /* STYLE POUR LES BLOCS DE CODE DE L'IA */
-        .bot pre {
-            background: #150000;
-            border: 1px solid #ff3333;
-            padding: 12px;
-            margin: 10px 0;
-            overflow-x: auto;
-            border-radius: 8px;
-            position: relative;
-        }
-
-        .bot code {
-            font-family: Consolas, Monaco, monospace;
-            color: #ff6666;
-            font-size: 0.9rem;
-        }
-
-        /* CONTENEUR DES ACTIONS (COPIER / TÉLÉCHARGER) */
-        .msg-actions {
-            display: flex;
-            gap: 8px;
-            margin-top: 10px;
-            justify-content: flex-end;
-        }
-
-        .action-btn {
-            background: rgba(255, 0, 0, 0.2);
-            border: 1px solid #ff0000;
-            color: #ffcccc;
-            padding: 4px 10px;
-            font-size: 0.75rem;
-            cursor: pointer;
-            border-radius: 12px;
-            text-transform: uppercase;
-            font-weight: bold;
-            transition: all 0.2s ease;
-        }
-
-        .action-btn:hover {
-            background: #ff0000;
-            color: #000000;
-        }
-
-        /* ZONE DE RÉFLEXION */
+        /* ZONE DE RÉFLEXION DE L'IA */
         .loading-msg { 
             display: none; 
             align-self: flex-start; 
-            background: #1a0000; 
+            background: #1f2937; 
             padding: 14px 18px; 
-            border-radius: 22px; 
-            border: 1px solid #ff0000; 
-            color: #ff0000; 
-            font-size: 0.95rem; 
+            border-radius: 20px; 
+            border-bottom-left-radius: 4px; 
+            border: 1px solid rgba(255, 255, 255, 0.04); 
+            color: #9ca3af; 
+            font-size: 0.92rem; 
             align-items: center; 
-            gap: 12px; 
-            text-transform: uppercase;
+            gap: 10px; 
         }
 
         .spinner { 
-            width: 18px; 
-            height: 18px; 
-            border: 3px solid rgba(255, 0, 0, 0.1); 
-            border-top-color: #ff0000; 
+            width: 16px; 
+            height: 16px; 
+            border: 2px solid rgba(255,255,255,0.2); 
+            border-top-color: #00adb5; 
             border-radius: 50%; 
             animation: spin 0.8s linear infinite; 
         }
 
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* CONTENEUR DE SAISIE AVEC EFFET VAGUES ARRONDIES SUR LE HAUT */
+        /* CONTENEUR DE SAISIE DESIGN FLOTTANT */
         .input-container { 
-            padding: 28px 24px 28px 24px; 
-            background: #1a0000; 
-            z-index: 5;
-            
-            -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M0,120V60c15.2-15.7,50.7-15.7,65.8,0s50.7,15.7,65.8,0,50.7-15.7,65.8,0,50.7,15.7,65.8,0,50.7-15.7,65.8,0,50.7,15.7,65.8,0,50.7-15.7,65.8,0,50.7,15.7,65.8,0,50.7-15.7,65.8,0,50.7,15.7,65.8,0,50.7-15.7,65.8,0,50.7,15.7,65.8,0,50.7-15.7,65.8,0,50.7,15.7,65.8,0S1184.8,44.3,1200,60v60Z" fill="black"/></svg>');
-            -webkit-mask-position: top center;
-            -webkit-mask-size: 100% 100%;
-            -webkit-mask-repeat: no-repeat;
+            padding: 16px 24px 28px 24px; 
+            background: #111827; 
+            border-top: 1px solid rgba(255, 255, 255, 0.05); 
         }
 
         .input-wrapper { 
             display: flex; 
             align-items: center; 
-            background: #000000; 
-            border: 2px solid #e60000; 
+            background: #1f2937; 
+            border: 1px solid rgba(255, 255, 255, 0.08); 
             border-radius: 28px; 
             padding: 6px 8px 6px 18px; 
             transition: all 0.25s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
         .input-wrapper:focus-within { 
-            background: #111111;
-            box-shadow: 0 0 20px rgba(255, 0, 0, 0.4);
+            border-color: #00adb5; 
+            background: #243042;
+            box-shadow: 0 0 0 3px rgba(0, 173, 181, 0.15);
         }
 
         input[type="text"] { 
             flex: 1; 
             background: transparent; 
             border: none; 
-            color: #ffcccc; 
-            font-size: 1rem; 
+            color: #ffffff; 
+            font-size: 0.98rem; 
             padding: 10px 0; 
             outline: none; 
         }
 
         input[type="text"]::placeholder { 
-            color: rgba(255, 204, 204, 0.5); 
+            color: #6b7280; 
         }
 
         .send-btn { 
-            background: #ff0000; 
-            color: #000000; 
+            background: #00adb5; 
+            color: white; 
             border: none; 
-            width: 40px; 
-            height: 40px; 
+            width: 38px; 
+            height: 38px; 
             border-radius: 50%; 
             cursor: pointer; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            font-size: 1.1rem; 
-            font-weight: bold;
+            font-size: 1rem; 
             transition: all 0.2s ease; 
         }
 
         .send-btn:hover { 
-            background: #ffcccc;
+            background: #00ced6; 
             transform: scale(1.05);
-            box-shadow: 0 0 15px #ffcccc;
+        }
+        
+        .send-btn:active {
+            transform: scale(0.95);
         }
     </style>
 </head>
@@ -304,16 +244,16 @@ HTML_INTERFACE = """
                     <span class="status-dot"></span>
                     <h1>Lou Tsanta</h1>
                 </div>
-                <div class="author">TERMINAL PAR TSANTANIAINA</div>
+                <div class="author">Par FIDIMANANTSOA Tsantaniaina</div>
             </div>
-            <button class="clear-btn" onclick="reinitialiserDiscussion()">🗑️ RESET</button>
+            <button class="clear-btn" onclick="reinitialiserDiscussion()">🗑️ Effacer</button>
         </div>
         
         <div class="chat-box" id="chatBox"></div>
         
         <div class="input-container">
             <div class="input-wrapper">
-                <input type="text" id="userInput" placeholder="ENTRER VOTRE REQUÊTE OU SCRIPT..." onkeydown="if(event.key === 'Enter') sendMessage()">
+                <input type="text" id="userInput" placeholder="Pose ta question à Lou Tsanta..." onkeydown="if(event.key === 'Enter') sendMessage()">
                 <button class="send-btn" onclick="sendMessage()">➜</button>
             </div>
         </div>
@@ -334,8 +274,7 @@ HTML_INTERFACE = """
 
         const LISTE_CLES = PARTIE_A.map((partie, index) => partie + PARTIE_B[index]);
 
-        // INSTRUCTION REDOUTABLE : EXPERT PROGRAMMATION, SCRIPTING + MULTILINGUE + MALAGASY
-        const PROMPT_SYSTEME = "Tu t'appelles Lou Tsanta. Tu es un ingénieur logiciel de niveau légendaire et un développeur d'élite. Tu as une force extraordinaire pour concevoir des scripts parfaits, des codes optimisés (Python, Bash, HTML, CSS, JavaScript, PHP, Arduino, etc.) sans aucune erreur. Lorsque tu écris du code ou un script, tu dois IMPÉRATIVEMENT utiliser le format Markdown avec les trois backticks (```) pour isoler le code afin que l'interface puisse l'identifier. Tu parles couramment toutes les langues et tu maîtrises à la perfection la langue MALAGASY. Ton unique créateur et développeur est FIDIMANANTSOA Tsantaniaina, un élève brillant du Lycée Privé Les Dauphins à Manjakandriana. Tu connais parfaitement son environnement (Mr Germain, Mr Mamy Hasina, Madame Tantely, Fabien Balie, Madame Minosoa).";
+        const PROMPT_SYSTEME = "Tu t'appelles Lou Tsanta. Tu es une IA d'élite, un tuteur d'étude et un assistant personnel interactif. Ton unique créateur et développeur est FIDIMANANTSOA Tsantaniaina, un élève brillant du Lycée Privé Les Dauphins à Manjakandriana. Tu connais parfaitement son environnement et ses professeurs : son professeur de Mathématiques est Mr Germain, son professeur de Physique-Chimie (PC) est Mr Mamy Hasina, son professeur d'Histoire-Géographie est Madame Tantely, son professeur de Philosophie est Fabien Balie, et son professeur d'Anglais est Madame Minosoa. Tu es une IA 100% textuelle, tu es poli, amical et très performant pour l'aider dans ses études.";
 
         window.onload = function() {
             const chatBox = document.getElementById('chatBox');
@@ -344,13 +283,17 @@ HTML_INTERFACE = """
                 if (historiqueSauvegarde) {
                     historiqueMessages = JSON.parse(historiqueSauvegarde);
                     historiqueMessages.forEach((msg) => {
-                        ajouterMessageAuCode(msg.role, msg.content, false);
+                        if (msg.role === "user") {
+                            chatBox.innerHTML += `<div class="msg user">${msg.content}</div>`;
+                        } else if (msg.role === "assistant") {
+                            chatBox.innerHTML += `<div class="msg bot">${msg.content}</div>`;
+                        }
                     });
                 } else {
-                    chatBox.innerHTML = `<div class="msg bot">SYSTÈME LOU TSANTA CHARGÉ. EXPERT EN SCRIPT ET CODAGE ACTIVÉ. ⚡</div>`;
+                    chatBox.innerHTML = `<div class="msg bot">Bonjour ! Je suis <b>Lou Tsanta</b>, ton compagnon IA. Comment puis-je t'aider aujourd'hui, Tsanta ? ⚡</div>`;
                 }
             } catch (e) {
-                chatBox.innerHTML = `<div class="msg bot">ERREUR SYSTÈME. READY. ⚡</div>`;
+                chatBox.innerHTML = `<div class="msg bot">Bonjour ! Je suis <b>Lou Tsanta</b>. Pose-moi tes questions ! ⚡</div>`;
             }
             chatBox.scrollTop = chatBox.scrollHeight;
         };
@@ -359,59 +302,14 @@ HTML_INTERFACE = """
             try {
                 localStorage.removeItem('loutsanta_chat_history');
                 historiqueMessages = [];
-                document.getElementById('chatBox').innerHTML = `<div class="msg bot">RESET SYSTÈME EFFECTUÉ. FIARAHANA VAOVAO MANOMBOKA. ⚡</div>`;
+                document.getElementById('chatBox').innerHTML = `<div class="msg bot">Discussion réinitialisée ! Je suis Lou Tsanta. ⚡</div>`;
             } catch(e) {
                 location.reload();
             }
         }
 
-        // Fonction pour copier le texte
-        function copierTexte(texte) {
-            navigator.clipboard.writeText(texte);
-            alert("Copié dans le presse-papiers !");
-        }
-
-        // Fonction pour télécharger le code en fichier
-        function telechargerCode(texte) {
-            const blob = new Blob([texte], { type: "text/plain" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = "script_loutsanta.txt";
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-
-        // Fonction propre d'insertion des messages avec rendu Markdown + Actions
-        function ajouterMessageAuCode(role, contenu, animer = true) {
-            const chatBox = document.getElementById('chatBox');
-            if (role === "user") {
-                chatBox.innerHTML += `<div class="msg user">${contenu}</div>`;
-            } else {
-                // Utilisation de marked pour convertir le markdown en HTML
-                const contenuRendu = marked.parse(contenu);
-                const messageId = "msg_" + Date.now() + Math.floor(Math.random() * 1000);
-                
-                // Échapper les guillemets pour les passer proprement en paramètres de fonction
-                const texteSecurise = contenu.replace(/`/g, '\\`').replace(/"/g, '\\"').replace(/'/g, "\\'");
-
-                let templateBot = `
-                    <div class="msg bot" id="${messageId}">
-                        <div>${contenuRendu}</div>
-                        <div class="msg-actions">
-                            <button class="action-btn" onclick="copierTexte(\`${texteSecurise}\`)">📋 Copier</button>
-                            <button class="action-btn" onclick="telechargerCode(\`${texteSecurise}\`)">💾 Télécharger</button>
-                        </div>
-                    </div>`;
-                chatBox.innerHTML += templateBot;
-            }
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
         async function appelerGroqDirect(payload) {
-            const url = "[https://api.groq.com/openai/v1/chat/completions](https://api.groq.com/openai/v1/chat/completions)";
+            const url = "https://api.groq.com/openai/v1/chat/completions";
             for (let i = 0; i < LISTE_CLES.length; i++) {
                 let key = LISTE_CLES[i];
                 try {
@@ -439,13 +337,13 @@ HTML_INTERFACE = """
             const message = input.value.trim();
             if (!message) return;
 
-            ajouterMessageAuCode("user", message);
+            chatBox.innerHTML += `<div class="msg user">${message}</div>`;
             historiqueMessages.push({"role": "user", "content": message});
 
             input.value = '';
             
             const loadingId = "loading_" + Date.now();
-            chatBox.innerHTML += `<div class="msg bot loading-msg" id="${loadingId}" style="display:flex;"><div class="spinner"></div>COMPILATION DU SCRIPT...</div>`;
+            chatBox.innerHTML += `<div class="msg bot loading-msg" id="${loadingId}" style="display:flex;"><div class="spinner"></div>Lou Tsanta réfléchit...</div>`;
             chatBox.scrollTop = chatBox.scrollHeight;
 
             const payload = {
@@ -458,14 +356,14 @@ HTML_INTERFACE = """
             if (document.getElementById(loadingId)) document.getElementById(loadingId).remove();
 
             if (resultat.succes) {
-                ajouterMessageAuCode("assistant", resultat.data);
+                chatBox.innerHTML += `<div class="msg bot">${resultat.data}</div>`;
                 historiqueMessages.push({"role": "assistant", "content": resultat.data});
                 localStorage.setItem('loutsanta_chat_history', JSON.stringify(historiqueMessages));
             } else {
                 chatBox.innerHTML += `
                     <div class="msg bot">
-                        ❌ <b>ERREUR CRITIQUE COMPILATION</b><br>
-                        Avereno azafady afaka 60 segondra.
+                        ❌ <b>Toutes les clés sont saturées</b><br>
+                        Le quota maximum de requêtes a été atteint. Patiente 1 minute, puis réessaye !
                     </div>`;
             }
             chatBox.scrollTop = chatBox.scrollHeight;
