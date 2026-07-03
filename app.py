@@ -3,7 +3,7 @@ from flask import Flask, render_template_string
 
 app = Flask(__name__)
 
-# CONFIGURATION DE L'INTERFACE LOU TSANTA V6 (STYLE PUREMENT ARRONDI)
+# CONFIGURATION DE L'INTERFACE LOU TSANTA V7 (CORRIGÉE ET STABLE)
 HTML_INTERFACE = """
 <!DOCTYPE html>
 <html lang="fr">
@@ -36,7 +36,7 @@ HTML_INTERFACE = """
             background: #110000; 
             position: relative;
             border: 2px solid #e60000;
-            border-radius: 24px; /* Conteneur principal arrondi */
+            border-radius: 24px; 
             margin: 10px;
         }
 
@@ -50,7 +50,7 @@ HTML_INTERFACE = """
             z-index: 10; 
             min-height: 80px;
             border-bottom: 1px solid #ff0000;
-            border-top-left-radius: 22px; /* Épouse l'arrondi du conteneur */
+            border-top-left-radius: 22px; 
             border-top-right-radius: 22px;
         }
 
@@ -104,7 +104,7 @@ HTML_INTERFACE = """
             border: 2px solid #e60000; 
             color: #ff9999; 
             padding: 8px 16px; 
-            border-radius: 20px; /* Bouton arrondi */
+            border-radius: 20px; 
             cursor: pointer; 
             font-size: 0.85rem; 
             display: flex; 
@@ -142,7 +142,7 @@ HTML_INTERFACE = """
             line-height: 1.6; 
             font-size: 0.95rem; 
             word-wrap: break-word; 
-            border-radius: 22px; /* Bulles parfaitement rondes */
+            border-radius: 22px; 
             position: relative;
         }
 
@@ -151,7 +151,7 @@ HTML_INTERFACE = """
             color: #ffffff; 
             align-self: flex-end; 
             border: 1px solid #ffcccc;
-            border-bottom-right-radius: 4px; /* Petite pointe subtile */
+            border-bottom-right-radius: 4px; 
         }
 
         .bot { 
@@ -170,7 +170,7 @@ HTML_INTERFACE = """
             padding: 14px;
             margin: 10px 0;
             overflow-x: auto;
-            border-radius: 12px; /* Bloc de code arrondi */
+            border-radius: 12px; 
             position: relative;
         }
 
@@ -195,7 +195,7 @@ HTML_INTERFACE = """
             padding: 6px 14px;
             font-size: 0.75rem;
             cursor: pointer;
-            border-radius: 15px; /* Boutons d'actions arrondis */
+            border-radius: 15px; 
             text-transform: uppercase;
             font-weight: bold;
             transition: all 0.2s ease;
@@ -238,7 +238,7 @@ HTML_INTERFACE = """
             background: #1a0000; 
             z-index: 5;
             border-top: 1px solid #ff0000;
-            border-bottom-left-radius: 22px; /* Épouse l'arrondi du bas */
+            border-bottom-left-radius: 22px; 
             border-bottom-right-radius: 22px;
         }
 
@@ -247,7 +247,7 @@ HTML_INTERFACE = """
             align-items: center; 
             background: #000000; 
             border: 2px solid #e60000; 
-            border-radius: 30px; /* Barre de recherche entièrement ronde */
+            border-radius: 30px; 
             padding: 6px 8px 6px 18px; 
             transition: all 0.25s ease;
         }
@@ -277,7 +277,7 @@ HTML_INTERFACE = """
             border: none; 
             width: 42px; 
             height: 42px; 
-            border-radius: 50%; /* Bouton envoyer en cercle parfait */
+            border-radius: 50%; 
             cursor: pointer; 
             display: flex; 
             align-items: center; 
@@ -341,7 +341,7 @@ HTML_INTERFACE = """
                 if (historiqueSauvegarde) {
                     historiqueMessages = JSON.parse(historiqueSauvegarde);
                     historiqueMessages.forEach((msg) => {
-                        ajouterMessageAuCode(msg.role, msg.content, false);
+                        ajouterMessageAuCode(msg.role, msg.content);
                     });
                 } else {
                     chatBox.innerHTML = `<div class="msg bot">SYSTÈME LOU TSANTA CHARGÉ. EXPERT EN SCRIPT ET CODAGE ACTIVÉ. ⚡</div>`;
@@ -362,13 +362,18 @@ HTML_INTERFACE = """
             }
         }
 
-        function copierTexte(texte) {
-            navigator.clipboard.writeText(texte);
+        // Fonctions d'actions sécurisées par lecture directe de l'élément HTML parent
+        function executerCopie(bouton) {
+            const conteneurMessage = bouton.closest('.msg');
+            const texteBrut = conteneurMessage.getAttribute('data-rawtext');
+            navigator.clipboard.writeText(texteBrut);
             alert("Copié dans le presse-papiers !");
         }
 
-        function telechargerCode(texte) {
-            const blob = new Blob([texte], { type: "text/plain" });
+        function executerTelechargement(bouton) {
+            const conteneurMessage = bouton.closest('.msg');
+            const texteBrut = conteneurMessage.getAttribute('data-rawtext');
+            const blob = new Blob([texteBrut], { type: "text/plain" });
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
@@ -379,24 +384,31 @@ HTML_INTERFACE = """
             URL.revokeObjectURL(url);
         }
 
-        function ajouterMessageAuCode(role, contenu, animer = true) {
+        function ajouterMessageAuCode(role, contenu) {
             const chatBox = document.getElementById('chatBox');
             if (role === "user") {
-                chatBox.innerHTML += `<div class="msg user">${contenu}</div>`;
+                const divUser = document.createElement('div');
+                divUser.className = 'msg user';
+                divUser.textContent = contenu;
+                chatBox.appendChild(divUser);
             } else {
-                const contenuRendu = marked.parse(contenu);
-                const messageId = "msg_" + Date.now() + Math.floor(Math.random() * 1000);
-                const texteSecurise = contenu.replace(/`/g, '\\`').replace(/"/g, '\\"').replace(/'/g, "\\'");
+                const divBot = document.createElement('div');
+                divBot.className = 'msg bot';
+                // Stockage sécurisé du texte brut pour éviter les bugs d'échappement de chaînes
+                divBot.setAttribute('data-rawtext', contenu);
 
-                let templateBot = `
-                    <div class="msg bot" id="${messageId}">
-                        <div>${contenuRendu}</div>
-                        <div class="msg-actions">
-                            <button class="action-btn" onclick="copierTexte(\`${texteSecurise}\`)">📋 Copier</button>
-                            <button class="action-btn" onclick="telechargerCode(\`${texteSecurise}\`)">💾 Télécharger</button>
-                        </div>
-                    </div>`;
-                chatBox.innerHTML += templateBot;
+                const divRendu = document.createElement('div');
+                divRendu.innerHTML = marked.parse(contenu);
+                divBot.appendChild(divRendu);
+
+                const divActions = document.createElement('div');
+                divActions.className = 'msg-actions';
+                divActions.innerHTML = `
+                    <button class="action-btn" onclick="executerCopie(this)">📋 Copier</button>
+                    <button class="action-btn" onclick="executerTelechargement(this)">💾 Télécharger</button>
+                `;
+                divBot.appendChild(divActions);
+                chatBox.appendChild(divBot);
             }
             chatBox.scrollTop = chatBox.scrollHeight;
         }
