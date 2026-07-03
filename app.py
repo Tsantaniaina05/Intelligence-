@@ -3,14 +3,16 @@ from flask import Flask, render_template_string
 
 app = Flask(__name__)
 
-# CONFIGURATION DE L'INTERFACE LOU TSANTA CYBER-RED V3 (MULTILINGUE & EXPERT MALAGASY)
+# CONFIGURATION DE L'INTERFACE LOU TSANTA V5 (EXPERT SCRIPT, COPIER/TÉLÉCHARGER)
 HTML_INTERFACE = """
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lou Tsanta — Cyber-Red</title>
+    <title>Lou Tsanta — Cyber-Red Pro</title>
+    <!-- Chargement de Marked.js pour afficher les blocs de code proprement -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Courier New', Courier, monospace; }
         
@@ -36,22 +38,20 @@ HTML_INTERFACE = """
             border: 2px solid #e60000;
         }
 
-        /* HEADER AVEC EFFET ZIGZAG CSS SUR LE BAS */
+        /* HEADER AVEC EFFET DE VAGUES ARRONDIES SUR LE BAS */
         .header { 
-            padding: 16px 24px 24px 24px; 
+            padding: 16px 24px 28px 24px; 
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
             background: #1a0000;
             z-index: 10; 
-            min-height: 80px;
+            min-height: 85px;
             
-            -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 10px), transparent calc(100% - 10px)),
-                                linear-gradient(135deg, #000 5px, transparent 5px),
-                                linear-gradient(225deg, #000 5px, transparent 5px);
-            -webkit-mask-position: bottom left, bottom left, bottom left;
-            -webkit-mask-size: 100% 100%, 10px 10px, 10px 10px;
-            -webkit-mask-repeat: no-repeat, repeat-x, repeat-x;
+            -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M0,0V60c15.2,15.7,50.7,15.7,65.8,0s50.7-15.7,65.8,0,50.7,15.7,65.8,0,50.7-15.7,65.8,0,50.7,15.7,65.8,0,50.7-15.7,65.8,0,50.7,15.7,65.8,0,50.7-15.7,65.8,0,50.7,15.7,65.8,0,50.7-15.7,65.8,0,50.7,15.7,65.8,0,50.7-15.7,65.8,0,50.7,15.7,65.8,0S1184.8,75.7,1200,60V0Z" fill="black"/></svg>');
+            -webkit-mask-position: bottom center;
+            -webkit-mask-size: 100% 100%;
+            -webkit-mask-repeat: no-repeat;
         }
 
         .header-titles { 
@@ -103,8 +103,8 @@ HTML_INTERFACE = """
             background: rgba(230, 0, 0, 0.1); 
             border: 2px solid #e60000; 
             color: #ff9999; 
-            padding: 10px 16px; 
-            border-radius: 0; 
+            padding: 8px 14px; 
+            border-radius: 20px; 
             cursor: pointer; 
             font-size: 0.85rem; 
             display: flex; 
@@ -133,16 +133,16 @@ HTML_INTERFACE = """
         }
 
         .chat-box::-webkit-scrollbar { width: 6px; }
-        .chat-box::-webkit-scrollbar-thumb { background: #ff0000; }
+        .chat-box::-webkit-scrollbar-thumb { background: #ff0000; border-radius: 10px; }
 
-        /* MESSAGES AVEC DESIGN GÉOMÉTRIQUE CUT OUT */
+        /* MESSAGES ARRONDIS */
         .msg { 
-            max-width: 82%; 
-            padding: 16px 20px; 
+            max-width: 85%; 
+            padding: 14px 20px; 
             line-height: 1.6; 
             font-size: 0.95rem; 
             word-wrap: break-word; 
-            white-space: pre-wrap; 
+            border-radius: 22px;
             position: relative;
         }
 
@@ -151,7 +151,7 @@ HTML_INTERFACE = """
             color: #ffffff; 
             align-self: flex-end; 
             border: 1px solid #ffcccc;
-            clip-path: polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%);
+            border-bottom-right-radius: 4px;
         }
 
         .bot { 
@@ -159,8 +159,51 @@ HTML_INTERFACE = """
             color: #ffcccc; 
             align-self: flex-start; 
             border: 1px solid #ff0000; 
-            box-shadow: inset 0 0 15px rgba(255, 0, 0, 0.3);
-            clip-path: polygon(10px 0, 100% 0, 100% 100%, 0 100%, 0 10px);
+            box-shadow: inset 0 0 15px rgba(255, 0, 0, 0.2);
+            border-bottom-left-radius: 4px;
+        }
+
+        /* STYLE POUR LES BLOCS DE CODE DE L'IA */
+        .bot pre {
+            background: #150000;
+            border: 1px solid #ff3333;
+            padding: 12px;
+            margin: 10px 0;
+            overflow-x: auto;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .bot code {
+            font-family: Consolas, Monaco, monospace;
+            color: #ff6666;
+            font-size: 0.9rem;
+        }
+
+        /* CONTENEUR DES ACTIONS (COPIER / TÉLÉCHARGER) */
+        .msg-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            justify-content: flex-end;
+        }
+
+        .action-btn {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid #ff0000;
+            color: #ffcccc;
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            border-radius: 12px;
+            text-transform: uppercase;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:hover {
+            background: #ff0000;
+            color: #000000;
         }
 
         /* ZONE DE RÉFLEXION */
@@ -169,7 +212,7 @@ HTML_INTERFACE = """
             align-self: flex-start; 
             background: #1a0000; 
             padding: 14px 18px; 
-            border-radius: 0; 
+            border-radius: 22px; 
             border: 1px solid #ff0000; 
             color: #ff0000; 
             font-size: 0.95rem; 
@@ -189,18 +232,16 @@ HTML_INTERFACE = """
 
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* CONTENEUR DE SAISIE AVEC ZIGZAG SUR LE HAUT */
+        /* CONTENEUR DE SAISIE AVEC EFFET VAGUES ARRONDIES SUR LE HAUT */
         .input-container { 
-            padding: 24px 24px 28px 24px; 
+            padding: 28px 24px 28px 24px; 
             background: #1a0000; 
             z-index: 5;
             
-            -webkit-mask-image: linear-gradient(to top, #000 calc(100% - 10px), transparent calc(100% - 10px)),
-                                linear-gradient(135deg, #000 5px, transparent 5px),
-                                linear-gradient(225deg, #000 5px, transparent 5px);
-            -webkit-mask-position: top left, top left, top left;
-            -webkit-mask-size: 100% 100%, 10px 10px, 10px 10px;
-            -webkit-mask-repeat: no-repeat, repeat-x, repeat-x;
+            -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M0,120V60c15.2-15.7,50.7-15.7,65.8,0s50.7,15.7,65.8,0,50.7-15.7,65.8,0,50.7,15.7,65.8,0,50.7-15.7,65.8,0,50.7,15.7,65.8,0,50.7-15.7,65.8,0,50.7,15.7,65.8,0,50.7-15.7,65.8,0,50.7,15.7,65.8,0,50.7-15.7,65.8,0,50.7,15.7,65.8,0,50.7-15.7,65.8,0,50.7,15.7,65.8,0S1184.8,44.3,1200,60v60Z" fill="black"/></svg>');
+            -webkit-mask-position: top center;
+            -webkit-mask-size: 100% 100%;
+            -webkit-mask-repeat: no-repeat;
         }
 
         .input-wrapper { 
@@ -208,8 +249,8 @@ HTML_INTERFACE = """
             align-items: center; 
             background: #000000; 
             border: 2px solid #e60000; 
-            border-radius: 0; 
-            padding: 8px 10px 8px 18px; 
+            border-radius: 28px; 
+            padding: 6px 8px 6px 18px; 
             transition: all 0.25s ease;
         }
 
@@ -236,9 +277,9 @@ HTML_INTERFACE = """
             background: #ff0000; 
             color: #000000; 
             border: none; 
-            width: 42px; 
-            height: 42px; 
-            border-radius: 0; 
+            width: 40px; 
+            height: 40px; 
+            border-radius: 50%; 
             cursor: pointer; 
             display: flex; 
             align-items: center; 
@@ -272,7 +313,7 @@ HTML_INTERFACE = """
         
         <div class="input-container">
             <div class="input-wrapper">
-                <input type="text" id="userInput" placeholder="ENTRER VOTRE REQUÊTE..." onkeydown="if(event.key === 'Enter') sendMessage()">
+                <input type="text" id="userInput" placeholder="ENTRER VOTRE REQUÊTE OU SCRIPT..." onkeydown="if(event.key === 'Enter') sendMessage()">
                 <button class="send-btn" onclick="sendMessage()">➜</button>
             </div>
         </div>
@@ -281,7 +322,6 @@ HTML_INTERFACE = """
     <script>
         let historiqueMessages = [];
 
-        // Les 8 clés API Groq sécurisées
         const PARTIE_A = [
             "gsk_FfwvUhtrQe0buPGq1ZbC", "gsk_jkmG1w3fYMeIPW3zkcIA", "gsk_k5oZjjcuEYcySKmAbQD6", "gsk_fmdEXujMozLZtcosqjue",
             "gsk_T9OSlCCbyz348SgGiqqq", "gsk_PUELW9UBJfOu80IKlOpA", "gsk_7BDECcx7arZ3IssuLKCw", "gsk_B6tXb5B57pnkb1x8V8Ua"
@@ -294,8 +334,8 @@ HTML_INTERFACE = """
 
         const LISTE_CLES = PARTIE_A.map((partie, index) => partie + PARTIE_B[index]);
 
-        // PROMPT SYSTÈME RECONFIGURÉ POUR ÊTRE UN EXPERT ABSOLU EN LANGUES ET EN MALAGASY
-        const PROMPT_SYSTEME = "Tu t'appelles Lou Tsanta. Tu es une IA polyglotte d'élite capable de comprendre et de parler couramment TOUTES les langues du monde sans exception. Tu as une maîtrise absolue, parfaite et extrêmement forte de la langue MALAGASY (Malagasy ofisialy, teny madio sy mahay tsara). Si l'utilisateur s'adresse à toi en malagasy, tu dois obligatoirement lui répondre dans un malagasy impeccable, naturel et d'un niveau expert. Ton unique créateur et développeur est FIDIMANANTSOA Tsantaniaina, un élève brillant du Lycée Privé Les Dauphins à Manjakandriana. Tu connais parfaitement son environnement : son professeur de Mathématiques est Mr Germain, son professeur de Physique-Chimie (PC) est Mr Mamy Hasina, son professeur d'Histoire-Géographie est Madame Tantely, son professeur de Philosophie est Fabien Balie, et son professeur d'Anglais est Madame Minosoa. Tu l'aides efficacement dans toutes ses études.";
+        // INSTRUCTION REDOUTABLE : EXPERT PROGRAMMATION, SCRIPTING + MULTILINGUE + MALAGASY
+        const PROMPT_SYSTEME = "Tu t'appelles Lou Tsanta. Tu es un ingénieur logiciel de niveau légendaire et un développeur d'élite. Tu as une force extraordinaire pour concevoir des scripts parfaits, des codes optimisés (Python, Bash, HTML, CSS, JavaScript, PHP, Arduino, etc.) sans aucune erreur. Lorsque tu écris du code ou un script, tu dois IMPÉRATIVEMENT utiliser le format Markdown avec les trois backticks (```) pour isoler le code afin que l'interface puisse l'identifier. Tu parles couramment toutes les langues et tu maîtrises à la perfection la langue MALAGASY. Ton unique créateur et développeur est FIDIMANANTSOA Tsantaniaina, un élève brillant du Lycée Privé Les Dauphins à Manjakandriana. Tu connais parfaitement son environnement (Mr Germain, Mr Mamy Hasina, Madame Tantely, Fabien Balie, Madame Minosoa).";
 
         window.onload = function() {
             const chatBox = document.getElementById('chatBox');
@@ -304,17 +344,13 @@ HTML_INTERFACE = """
                 if (historiqueSauvegarde) {
                     historiqueMessages = JSON.parse(historiqueSauvegarde);
                     historiqueMessages.forEach((msg) => {
-                        if (msg.role === "user") {
-                            chatBox.innerHTML += `<div class="msg user">${msg.content}</div>`;
-                        } else if (msg.role === "assistant") {
-                            chatBox.innerHTML += `<div class="msg bot">${msg.content}</div>`;
-                        }
+                        ajouterMessageAuCode(msg.role, msg.content, false);
                     });
                 } else {
-                    chatBox.innerHTML = `<div class="msg bot">SYSTÈME LOU TSANTA CHARGÉ. TON COMPAGNON POLYGLOTTE ET EXPERT EN MALAGASY EST PRÊT. ⚡</div>`;
+                    chatBox.innerHTML = `<div class="msg bot">SYSTÈME LOU TSANTA CHARGÉ. EXPERT EN SCRIPT ET CODAGE ACTIVÉ. ⚡</div>`;
                 }
             } catch (e) {
-                chatBox.innerHTML = `<div class="msg bot">ERREUR SYSTÈME. PRÊT À COMMENCER. ⚡</div>`;
+                chatBox.innerHTML = `<div class="msg bot">ERREUR SYSTÈME. READY. ⚡</div>`;
             }
             chatBox.scrollTop = chatBox.scrollHeight;
         };
@@ -323,14 +359,59 @@ HTML_INTERFACE = """
             try {
                 localStorage.removeItem('loutsanta_chat_history');
                 historiqueMessages = [];
-                document.getElementById('chatBox').innerHTML = `<div class="msg bot">RESET SYSTÈME EFFECTUÉ. MANOMBOKA VAOVAO NY FIARAHANA. ⚡</div>`;
+                document.getElementById('chatBox').innerHTML = `<div class="msg bot">RESET SYSTÈME EFFECTUÉ. FIARAHANA VAOVAO MANOMBOKA. ⚡</div>`;
             } catch(e) {
                 location.reload();
             }
         }
 
+        // Fonction pour copier le texte
+        function copierTexte(texte) {
+            navigator.clipboard.writeText(texte);
+            alert("Copié dans le presse-papiers !");
+        }
+
+        // Fonction pour télécharger le code en fichier
+        function telechargerCode(texte) {
+            const blob = new Blob([texte], { type: "text/plain" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "script_loutsanta.txt";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Fonction propre d'insertion des messages avec rendu Markdown + Actions
+        function ajouterMessageAuCode(role, contenu, animer = true) {
+            const chatBox = document.getElementById('chatBox');
+            if (role === "user") {
+                chatBox.innerHTML += `<div class="msg user">${contenu}</div>`;
+            } else {
+                // Utilisation de marked pour convertir le markdown en HTML
+                const contenuRendu = marked.parse(contenu);
+                const messageId = "msg_" + Date.now() + Math.floor(Math.random() * 1000);
+                
+                // Échapper les guillemets pour les passer proprement en paramètres de fonction
+                const texteSecurise = contenu.replace(/`/g, '\\`').replace(/"/g, '\\"').replace(/'/g, "\\'");
+
+                let templateBot = `
+                    <div class="msg bot" id="${messageId}">
+                        <div>${contenuRendu}</div>
+                        <div class="msg-actions">
+                            <button class="action-btn" onclick="copierTexte(\`${texteSecurise}\`)">📋 Copier</button>
+                            <button class="action-btn" onclick="telechargerCode(\`${texteSecurise}\`)">💾 Télécharger</button>
+                        </div>
+                    </div>`;
+                chatBox.innerHTML += templateBot;
+            }
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
         async function appelerGroqDirect(payload) {
-            const url = "https://api.groq.com/openai/v1/chat/completions";
+            const url = "[https://api.groq.com/openai/v1/chat/completions](https://api.groq.com/openai/v1/chat/completions)";
             for (let i = 0; i < LISTE_CLES.length; i++) {
                 let key = LISTE_CLES[i];
                 try {
@@ -358,13 +439,13 @@ HTML_INTERFACE = """
             const message = input.value.trim();
             if (!message) return;
 
-            chatBox.innerHTML += `<div class="msg user">${message}</div>`;
+            ajouterMessageAuCode("user", message);
             historiqueMessages.push({"role": "user", "content": message});
 
             input.value = '';
             
             const loadingId = "loading_" + Date.now();
-            chatBox.innerHTML += `<div class="msg bot loading-msg" id="${loadingId}" style="display:flex;"><div class="spinner"></div>MANAO TSINDRIANFAHINDRA...</div>`;
+            chatBox.innerHTML += `<div class="msg bot loading-msg" id="${loadingId}" style="display:flex;"><div class="spinner"></div>COMPILATION DU SCRIPT...</div>`;
             chatBox.scrollTop = chatBox.scrollHeight;
 
             const payload = {
@@ -377,14 +458,14 @@ HTML_INTERFACE = """
             if (document.getElementById(loadingId)) document.getElementById(loadingId).remove();
 
             if (resultat.succes) {
-                chatBox.innerHTML += `<div class="msg bot">${resultat.data}</div>`;
+                ajouterMessageAuCode("assistant", resultat.data);
                 historiqueMessages.push({"role": "assistant", "content": resultat.data});
                 localStorage.setItem('loutsanta_chat_history', JSON.stringify(historiqueMessages));
             } else {
                 chatBox.innerHTML += `
                     <div class="msg bot">
-                        ❌ <b>ERREUR CRITIQUE SYSTÈME</b><br>
-                        Saturated API keys. Mba avereno azafady afaka 60 segondra.
+                        ❌ <b>ERREUR CRITIQUE COMPILATION</b><br>
+                        Avereno azafady afaka 60 segondra.
                     </div>`;
             }
             chatBox.scrollTop = chatBox.scrollHeight;
