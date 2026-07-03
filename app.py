@@ -3,7 +3,7 @@ from flask import Flask, render_template_string
 
 app = Flask(__name__)
 
-# CONFIGURATION DE L'INTERFACE LOU TSANTA V5 (EXPERT SCRIPT, COPIER/TÉLÉCHARGER)
+# CONFIGURATION DE L'INTERFACE LOU TSANTA V6 (STYLE PUREMENT ARRONDI)
 HTML_INTERFACE = """
 <!DOCTYPE html>
 <html lang="fr">
@@ -36,22 +36,22 @@ HTML_INTERFACE = """
             background: #110000; 
             position: relative;
             border: 2px solid #e60000;
+            border-radius: 24px; /* Conteneur principal arrondi */
+            margin: 10px;
         }
 
-        /* HEADER AVEC EFFET DE VAGUES ARRONDIES SUR LE BAS */
+        /* HEADER PROPRE ET ARRONDI */
         .header { 
-            padding: 16px 24px 28px 24px; 
+            padding: 20px 24px; 
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
             background: #1a0000;
             z-index: 10; 
-            min-height: 85px;
-            
-            -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M0,0V60c15.2,15.7,50.7,15.7,65.8,0s50.7-15.7,65.8,0,50.7,15.7,65.8,0,50.7-15.7,65.8,0,50.7,15.7,65.8,0,50.7-15.7,65.8,0,50.7,15.7,65.8,0,50.7-15.7,65.8,0,50.7,15.7,65.8,0,50.7-15.7,65.8,0,50.7,15.7,65.8,0,50.7-15.7,65.8,0,50.7,15.7,65.8,0S1184.8,75.7,1200,60V0Z" fill="black"/></svg>');
-            -webkit-mask-position: bottom center;
-            -webkit-mask-size: 100% 100%;
-            -webkit-mask-repeat: no-repeat;
+            min-height: 80px;
+            border-bottom: 1px solid #ff0000;
+            border-top-left-radius: 22px; /* Épouse l'arrondi du conteneur */
+            border-top-right-radius: 22px;
         }
 
         .header-titles { 
@@ -103,8 +103,8 @@ HTML_INTERFACE = """
             background: rgba(230, 0, 0, 0.1); 
             border: 2px solid #e60000; 
             color: #ff9999; 
-            padding: 8px 14px; 
-            border-radius: 20px; 
+            padding: 8px 16px; 
+            border-radius: 20px; /* Bouton arrondi */
             cursor: pointer; 
             font-size: 0.85rem; 
             display: flex; 
@@ -135,14 +135,14 @@ HTML_INTERFACE = """
         .chat-box::-webkit-scrollbar { width: 6px; }
         .chat-box::-webkit-scrollbar-thumb { background: #ff0000; border-radius: 10px; }
 
-        /* MESSAGES ARRONDIS */
+        /* MESSAGES EN BULLES BIEN ARRONDIES */
         .msg { 
             max-width: 85%; 
             padding: 14px 20px; 
             line-height: 1.6; 
             font-size: 0.95rem; 
             word-wrap: break-word; 
-            border-radius: 22px;
+            border-radius: 22px; /* Bulles parfaitement rondes */
             position: relative;
         }
 
@@ -151,7 +151,7 @@ HTML_INTERFACE = """
             color: #ffffff; 
             align-self: flex-end; 
             border: 1px solid #ffcccc;
-            border-bottom-right-radius: 4px;
+            border-bottom-right-radius: 4px; /* Petite pointe subtile */
         }
 
         .bot { 
@@ -163,14 +163,14 @@ HTML_INTERFACE = """
             border-bottom-left-radius: 4px;
         }
 
-        /* STYLE POUR LES BLOCS DE CODE DE L'IA */
+        /* STYLE POUR LES BLOCS DE CODE ENTOURÉS ET ARRONDIS */
         .bot pre {
             background: #150000;
             border: 1px solid #ff3333;
-            padding: 12px;
+            padding: 14px;
             margin: 10px 0;
             overflow-x: auto;
-            border-radius: 8px;
+            border-radius: 12px; /* Bloc de code arrondi */
             position: relative;
         }
 
@@ -180,11 +180,11 @@ HTML_INTERFACE = """
             font-size: 0.9rem;
         }
 
-        /* CONTENEUR DES ACTIONS (COPIER / TÉLÉCHARGER) */
+        /* CONTENEUR DES ACTIONS DE SCRIPT (COPIER / TÉLÉCHARGER) */
         .msg-actions {
             display: flex;
             gap: 8px;
-            margin-top: 10px;
+            margin-top: 12px;
             justify-content: flex-end;
         }
 
@@ -192,10 +192,10 @@ HTML_INTERFACE = """
             background: rgba(255, 0, 0, 0.2);
             border: 1px solid #ff0000;
             color: #ffcccc;
-            padding: 4px 10px;
+            padding: 6px 14px;
             font-size: 0.75rem;
             cursor: pointer;
-            border-radius: 12px;
+            border-radius: 15px; /* Boutons d'actions arrondis */
             text-transform: uppercase;
             font-weight: bold;
             transition: all 0.2s ease;
@@ -206,7 +206,7 @@ HTML_INTERFACE = """
             color: #000000;
         }
 
-        /* ZONE DE RÉFLEXION */
+        /* ZONE DE RÉFLEXION ARRONDIE */
         .loading-msg { 
             display: none; 
             align-self: flex-start; 
@@ -232,16 +232,14 @@ HTML_INTERFACE = """
 
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* CONTENEUR DE SAISIE AVEC EFFET VAGUES ARRONDIES SUR LE HAUT */
+        /* ZONE DE SAISIE PROPRE ET ARRONDIE */
         .input-container { 
-            padding: 28px 24px 28px 24px; 
+            padding: 20px 24px; 
             background: #1a0000; 
             z-index: 5;
-            
-            -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M0,120V60c15.2-15.7,50.7-15.7,65.8,0s50.7,15.7,65.8,0,50.7-15.7,65.8,0,50.7,15.7,65.8,0,50.7-15.7,65.8,0,50.7,15.7,65.8,0,50.7-15.7,65.8,0,50.7,15.7,65.8,0,50.7-15.7,65.8,0,50.7,15.7,65.8,0,50.7-15.7,65.8,0,50.7,15.7,65.8,0,50.7-15.7,65.8,0,50.7,15.7,65.8,0S1184.8,44.3,1200,60v60Z" fill="black"/></svg>');
-            -webkit-mask-position: top center;
-            -webkit-mask-size: 100% 100%;
-            -webkit-mask-repeat: no-repeat;
+            border-top: 1px solid #ff0000;
+            border-bottom-left-radius: 22px; /* Épouse l'arrondi du bas */
+            border-bottom-right-radius: 22px;
         }
 
         .input-wrapper { 
@@ -249,7 +247,7 @@ HTML_INTERFACE = """
             align-items: center; 
             background: #000000; 
             border: 2px solid #e60000; 
-            border-radius: 28px; 
+            border-radius: 30px; /* Barre de recherche entièrement ronde */
             padding: 6px 8px 6px 18px; 
             transition: all 0.25s ease;
         }
@@ -277,9 +275,9 @@ HTML_INTERFACE = """
             background: #ff0000; 
             color: #000000; 
             border: none; 
-            width: 40px; 
-            height: 40px; 
-            border-radius: 50%; 
+            width: 42px; 
+            height: 42px; 
+            border-radius: 50%; /* Bouton envoyer en cercle parfait */
             cursor: pointer; 
             display: flex; 
             align-items: center; 
@@ -334,8 +332,7 @@ HTML_INTERFACE = """
 
         const LISTE_CLES = PARTIE_A.map((partie, index) => partie + PARTIE_B[index]);
 
-        // INSTRUCTION REDOUTABLE : EXPERT PROGRAMMATION, SCRIPTING + MULTILINGUE + MALAGASY
-        const PROMPT_SYSTEME = "Tu t'appelles Lou Tsanta. Tu es un ingénieur logiciel de niveau légendaire et un développeur d'élite. Tu as une force extraordinaire pour concevoir des scripts parfaits, des codes optimisés (Python, Bash, HTML, CSS, JavaScript, PHP, Arduino, etc.) sans aucune erreur. Lorsque tu écris du code ou un script, tu dois IMPÉRATIVEMENT utiliser le format Markdown avec les trois backticks (```) pour isoler le code afin que l'interface puisse l'identifier. Tu parles couramment toutes les langues et tu maîtrises à la perfection la langue MALAGASY. Ton unique créateur et développeur est FIDIMANANTSOA Tsantaniaina, un élève brillant du Lycée Privé Les Dauphins à Manjakandriana. Tu connais parfaitement son environnement (Mr Germain, Mr Mamy Hasina, Madame Tantely, Fabien Balie, Madame Minosoa).";
+        const PROMPT_SYSTEME = "Tu t'appelles Lou Tsanta. Tu es un ingénieur logiciel de niveau légendaire et un développeur d'élite. Tu as une force extraordinaire pour concevoir des scripts parfaits, des codes optimisés (Python, Bash, HTML, CSS, JavaScript, PHP, Arduino, etc.) sans aucune erreur. Lorsque tu écris du code ou un script, tu devez IMPÉRATIVEMENT utiliser le format Markdown avec les trois backticks (```) pour isoler le code afin que l'interface puisse l'identifier. Tu parles couramment toutes les langues et tu maîtrises à la perfection la langue MALAGASY. Ton unique créateur et développeur est FIDIMANANTSOA Tsantaniaina, un élève brillant du Lycée Privé Les Dauphins à Manjakandriana. Tu connais parfaitement son environnement (Mr Germain, Mr Mamy Hasina, Madame Tantely, Fabien Balie, Madame Minosoa).";
 
         window.onload = function() {
             const chatBox = document.getElementById('chatBox');
@@ -365,13 +362,11 @@ HTML_INTERFACE = """
             }
         }
 
-        // Fonction pour copier le texte
         function copierTexte(texte) {
             navigator.clipboard.writeText(texte);
             alert("Copié dans le presse-papiers !");
         }
 
-        // Fonction pour télécharger le code en fichier
         function telechargerCode(texte) {
             const blob = new Blob([texte], { type: "text/plain" });
             const url = URL.createObjectURL(blob);
@@ -384,17 +379,13 @@ HTML_INTERFACE = """
             URL.revokeObjectURL(url);
         }
 
-        // Fonction propre d'insertion des messages avec rendu Markdown + Actions
         function ajouterMessageAuCode(role, contenu, animer = true) {
             const chatBox = document.getElementById('chatBox');
             if (role === "user") {
                 chatBox.innerHTML += `<div class="msg user">${contenu}</div>`;
             } else {
-                // Utilisation de marked pour convertir le markdown en HTML
                 const contenuRendu = marked.parse(contenu);
                 const messageId = "msg_" + Date.now() + Math.floor(Math.random() * 1000);
-                
-                // Échapper les guillemets pour les passer proprement en paramètres de fonction
                 const texteSecurise = contenu.replace(/`/g, '\\`').replace(/"/g, '\\"').replace(/'/g, "\\'");
 
                 let templateBot = `
