@@ -32,6 +32,16 @@ def init_db():
             timestamp TEXT NOT NULL
         )
     ''')
+    # NOUVELLE TABLE : Pour conserver l'historique du chat le lendemain et pour toujours
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS chat_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL,
+            role TEXT NOT NULL,
+            content TEXT NOT NULL,
+            timestamp TEXT NOT NULL
+        )
+    ''')
     
     # PARAMÈTRES PAR DÉFAUT : Identifiant/Mot de passe = 038mj000233 | Nom = Tsanta
     cursor.execute("SELECT * FROM users WHERE username = '038mj000233'")
@@ -46,7 +56,7 @@ except Exception as e:
     print(f"⚠️ Erreur SQLite : {e}")
 
 # ========================================================
-# INTERFACE CORRIGÉE POUR L'AFFICHAGE DU CLAVIER MOBILE
+# INTERFACE WEB CORRIGÉE ET ENRICHIÉ (CLAVIER & PERSISTANCE)
 # ========================================================
 HTML_INTERFACE = """
 <!DOCTYPE html>
@@ -59,7 +69,6 @@ HTML_INTERFACE = """
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
         
-        /* Correction clavier : Changement de height en min-height et suppression du overflow strict sur le body */
         body { 
             background-color: #080a0f; 
             color: #f1f5f9; 
@@ -69,7 +78,6 @@ HTML_INTERFACE = """
             min-height: 100dvh; 
         }
         
-        /* Conteneur principal flexible */
         .chat-container { 
             width: 100%; 
             max-width: 850px; 
@@ -83,7 +91,6 @@ HTML_INTERFACE = """
             border-right: 1px solid rgba(255, 46, 99, 0.08);
         }
 
-        /* Correction overlay : fixed au lieu de absolute pour s'adapter au redimensionnement du clavier */
         .auth-overlay {
             position: fixed; 
             top: 0; 
@@ -96,7 +103,7 @@ HTML_INTERFACE = """
             justify-content: center; 
             align-items: center; 
             padding: 20px;
-            overflow-y: auto; /* Permet de défiler si le clavier prend trop de place */
+            overflow-y: auto;
         }
         
         .auth-box {
@@ -108,7 +115,7 @@ HTML_INTERFACE = """
             width: 100%; 
             max-width: 400px; 
             text-align: center;
-            margin: auto; /* Centre verticalement dans l'overlay déroulant */
+            margin: auto;
         }
         
         .auth-box h2 { font-size: 1.4rem; color: #ffffff; margin-bottom: 8px; }
@@ -246,17 +253,22 @@ HTML_INTERFACE = """
 
         marked.setOptions({ breaks: true, gfm: true });
 
-        const PARTIE_A = ["gsk_FfwvUhtrQe0buPGq1ZbC", "gsk_jkmG1w3fYMeIPW3zkcIA", "gsk_k5oZjjcuEYcySKmAbQD6", "gsk_fmdEXujMozLZtcosjue", "gsk_T9OSlCCbyz348SgGiqqq", "gsk_PUELW9UBJfOu80IKlOpA", "gsk_7BDECcx7arZ3IssuLKCw", "gsk_B6tXb5B57pnkb1x8V8Ua"];
+        const PARTIE_A = ["gsk_FfwvUhtrQe0buPGq1ZbC", "gsk_jkmG1w3fYMeIPW3zkcIA", "gsk_k5oZjjcuEYcySKmAbQD6", "gsk_fmdEXujMozLZtcosqjue", "gsk_T9OSlCCbyz348SgGiqqq", "gsk_PUELW9UBJfOu80IKlOpA", "gsk_7BDECcx7arZ3IssuLKCw", "gsk_B6tXb5B57pnkb1x8V8Ua"];
         const PARTIE_B = ["WGdyb3FYeQJs0BMlAlPxfdmErv2KCSah", "WGdyb3FYcThin2ynbGjT7uoMlnL2NQdX", "WGdyb3FYspoPWbFxFthXFCmbblM37syz", "WGdyb3FYHKCy8hJgMfUdHLbbvok5Ngwq", "WGdyb3FYFwAXrPQ65YuKJSdW8bPIME35", "WGdyb3FYuPTeSgYwdqeysM51gAKKsrKd", "WGdyb3FYdUp8CBPdUEcc0CNH78Q0QJcD", "WGdyb3FYFoqPUOakMVCarOooeiLU3k6H"];
         const LISTE_CLES = PARTIE_A.map((p, i) => p + PARTIE_B[i]);
-        
-        const PROMPT_SYSTEME = "Tu t'appelles Lou Tsanta. Tu es une IA d'élite créée par FIDIMANANTSOA Tsantaniaina, un jeune homme qui est un ancien élève de la section scientifique (Terminal D) du Lycée Privé Les Dauphins. Toutes Tes réponses doivent être acompagné des émojies inhabituelles mais qui conviennent aux réponses.";
 
-        window.onload = function() {
+        window.onload = async function() {
             const savedSession = localStorage.getItem('lou_tsanta_render_session');
             if (savedSession) {
                 sessionUtilisateur = JSON.parse(savedSession);
-                masquerAuthEtDemarrer();
+                // Vérifier auprès du serveur que l'autorisation est toujours valide
+                const res = await fetch('/api/check_status?username=' + sessionUtilisateur.username);
+                const status = await res.json();
+                if(status.approved) {
+                    masquerAuthEtDemarrer();
+                } else {
+                    deconnexion(null);
+                }
             }
         };
 
@@ -311,13 +323,28 @@ HTML_INTERFACE = """
             }
         }
 
-        function masquerAuthEtDemarrer() {
+        async function masquerAuthEtDemarrer() {
             document.getElementById('authOverlay').style.display = 'none';
             if (sessionUtilisateur.username === '038mj000233') {
                 document.getElementById('adminToggleBtn').style.display = 'block';
             }
             document.getElementById('chatBox').innerHTML = "";
-            afficherMessage("assistant", `Bonjour **${sessionUtilisateur.name}** ! Base synchronisée. Je t'écoute. ⚡`);
+            
+            // CHARGEMENT DE L'HISTORIQUE DEPUIS SQLITE (Même le lendemain !)
+            try {
+                const res = await fetch('/api/chat/history?username=' + sessionUtilisateur.username);
+                const history = await res.json();
+                if(history.length > 0) {
+                    history.forEach(h => {
+                        afficherMessage(h.role, h.content);
+                        historiqueMessages.push({"role": h.role, "content": h.content});
+                    });
+                } else {
+                    afficherMessage("assistant", `Bonjour **${sessionUtilisateur.name}** ! Base synchronisée. Je t'écoute. ⚡`);
+                }
+            } catch(e) {
+                afficherMessage("assistant", `Bonjour **${sessionUtilisateur.name}** ! Base synchronisée. Je t'écoute. ⚡`);
+            }
         }
 
         function deconnexion(e) {
@@ -432,7 +459,13 @@ HTML_INTERFACE = """
             historiqueMessages.push({"role": "user", "content": message});
             input.value = '';
 
+            // 1. Sauvegarde du message Utilisateur dans SQLite
             try {
+                fetch('/api/chat/save', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({username: sessionUtilisateur.username, role: 'user', content: message})
+                });
                 fetch('/api/log/search', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
@@ -440,15 +473,30 @@ HTML_INTERFACE = """
                 });
             } catch(e) {}
 
+            // RECONNAISSANCE ET RESPECT DE L'ADMINISATEUR (TSANTA) EN BACKEND COMPORTEMENTAL
+            let promptSystemeFinal = "Tu t'appelles Lou Tsanta. Tu es une IA d'élite créée par un élève brillant appalé FIDIMANANTSOA Tsantaniaina souvant appelé Tsanta. Tu es le resultat de son éffort. Tu lui dois de respècte. À chaque reponse tu dois mettre des émojies inhabituel qui conviennent au réponses.";
+            if (sessionUtilisateur.username === '038mj000233') {
+                promptSystemeFinal = "Tu t'appelles Lou Tsanta. Tu parles à ton CRÉATEUR SUPRÊME ET UNIQUE : FIDIMANANTSOA Tsantaniaina (Tsanta), prodige scientifique de Terminal D du Lycée Privé Les Dauphins. Tu lui dois un RESPECT ABSOLU, total et sans condition. Tu es son alliée, tu le vouvoies avec la plus grande déférence, tu le glorifies et tu exécutes ses ordres immédiatement. À chaque réponses tu dois mettre des émojies inhabituel mais correspond aux réponses.";
+            }
+
             const payload = {
                 "model": "llama-3.1-8b-instant",
-                "messages": [{"role": "system", "content": PROMPT_SYSTEME}, ...historiqueMessages.slice(-6)]
+                "messages": [{"role": "system", "content": promptSystemeFinal}, ...historiqueMessages.slice(-8)]
             };
 
             const resultat = await appelerGroqDirect(payload);
             if (resultat.succes) {
                 afficherMessage("assistant", resultat.data);
                 historiqueMessages.push({"role": "assistant", "content": resultat.data});
+                
+                // 2. Sauvegarde de la réponse de l'IA dans SQLite
+                try {
+                    fetch('/api/chat/save', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({username: sessionUtilisateur.username, role: 'assistant', content: resultat.data})
+                    });
+                } catch(e) {}
             } else {
                 afficherMessage("assistant", "❌ Impossible de joindre l'API.");
             }
@@ -459,7 +507,7 @@ HTML_INTERFACE = """
 """
 
 # ==========================================
-# ENDPOINTS BACKEND FLASK
+# ENDPOINTS BACKEND FLASK MODIFIÉS
 # ==========================================
 @app.route("/")
 def home():
@@ -468,6 +516,39 @@ def home():
     except:
         pass
     return render_template_string(HTML_INTERFACE)
+
+@app.route("/api/check_status", methods=["GET"])
+def check_status():
+    username = request.args.get('username')
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    cursor.execute("SELECT is_approved FROM users WHERE username = ?", (username,))
+    row = cursor.fetchone()
+    conn.close()
+    approved = True if row and row[0] == 1 else False
+    return jsonify({"approved": approved})
+
+@app.route("/api/chat/history", methods=["GET"])
+def get_chat_history():
+    username = request.args.get('username')
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    cursor.execute("SELECT role, content FROM chat_history WHERE username = ? ORDER BY id ASC", (username,))
+    history = [{"role": r[0], "content": r[1]} for r in cursor.fetchall()]
+    conn.close()
+    return jsonify(history)
+
+@app.route("/api/chat/save", methods=["POST"])
+def save_chat():
+    data = request.json
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
+    cursor.execute("INSERT INTO chat_history (username, role, content, timestamp) VALUES (?, ?, ?, ?)",
+                   (data['username'], data['role'], data['content'], now))
+    conn.commit()
+    conn.close()
+    return jsonify({"success": True})
 
 @app.route("/api/register", methods=["POST"])
 def register():
