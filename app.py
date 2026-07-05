@@ -155,7 +155,7 @@ HTML_INTERFACE = """
                 </div>
                 <div class="form-group">
                     <label>Identifiant désiré</label>
-                    <input type="text" id="regUser" class="input-control" required placeholder="Ex: saniah10">
+                    <input type="text" id="regUser" class="input-control" required placeholder="Ex: Louptsanta123">
                 </div>
                 <div class="form-group">
                     <label>Mot de passe</label>
