@@ -3,21 +3,21 @@ from flask import Flask, render_template_string
 
 app = Flask(__name__)
 
-# CONFIGURATION DE L'INTERFACE LOU TSANTA PREMIUM V2 (AVEC BLOCS DE CODE ISOLÉS)
+# INTERFACE PREMIUM V3 - RED CRIMSON EXPERT EDITION
 HTML_INTERFACE = """
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lou Tsanta — Assistant Premium</title>
+    <title>Lou Tsanta — Assistant Pro Red</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
         
         body { 
-            background-color: #0b0f17; 
-            color: #e2e8f0; 
+            background-color: #080a0f; 
+            color: #f1f5f9; 
             display: flex; 
             justify-content: center; 
             height: 100vh; 
@@ -32,21 +32,24 @@ HTML_INTERFACE = """
             flex-direction: column; 
             height: 100vh; 
             height: 100dvh; 
-            background: #111827; 
+            background: #0f111a; 
             position: relative;
+            border-left: 1px solid rgba(255, 46, 99, 0.08);
+            border-right: 1px solid rgba(255, 46, 99, 0.08);
         }
 
-        /* HEADER PREMIUM STYLE CLAUDE/CHATGPT */
+        /* HEADER DÉCORÉ ULTRA PRO */
         .header { 
             padding: 16px 24px; 
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
-            background: rgba(17, 24, 39, 0.85); 
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06); 
+            background: rgba(15, 17, 26, 0.85); 
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 46, 99, 0.15); 
             z-index: 10; 
             min-height: 75px;
+            box-shadow: 0 4px 20px rgba(255, 46, 99, 0.05);
         }
 
         .header-titles { 
@@ -58,37 +61,47 @@ HTML_INTERFACE = """
         .header-main {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
         }
 
         .header h1 { 
-            font-size: 1.2rem; 
+            font-size: 1.25rem; 
             color: #ffffff; 
-            font-weight: 600; 
+            font-weight: 700; 
             letter-spacing: -0.3px;
+            text-shadow: 0 0 10px rgba(255, 46, 99, 0.3);
         }
 
         .status-dot {
             width: 8px;
             height: 8px;
-            background-color: #10b981;
+            background-color: #ff2e63;
             border-radius: 50%;
             display: inline-block;
-            box-shadow: 0 0 8px #10b981;
+            box-shadow: 0 0 10px #ff2e63, 0 0 20px #ff2e63;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
         }
 
         .header .author { 
             font-size: 0.72rem; 
             color: #9ca3af; 
-            margin-top: 2px; 
-            font-weight: 400; 
-            opacity: 0.8; 
+            margin-top: 3px; 
+            font-weight: 500; 
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            opacity: 0.7; 
         }
 
         .clear-btn { 
-            background: rgba(255, 255, 255, 0.04); 
-            border: 1px solid rgba(255, 255, 255, 0.08); 
-            color: #9ca3af; 
+            background: rgba(255, 46, 99, 0.06); 
+            border: 1px solid rgba(255, 46, 99, 0.2); 
+            color: #ff2e63; 
             padding: 8px 14px; 
             border-radius: 16px; 
             cursor: pointer; 
@@ -96,17 +109,18 @@ HTML_INTERFACE = """
             display: flex; 
             align-items: center; 
             gap: 6px; 
-            transition: all 0.2s ease; 
-            font-weight: 500; 
+            transition: all 0.25s ease; 
+            font-weight: 600; 
         }
 
         .clear-btn:hover { 
-            background: rgba(239, 68, 68, 0.15); 
-            color: #ef4444; 
-            border-color: rgba(239, 68, 68, 0.25); 
+            background: #ff2e63; 
+            color: #ffffff; 
+            border-color: #ff2e63;
+            box-shadow: 0 0 12px rgba(255, 46, 99, 0.4);
         }
 
-        /* ZONE DE DISCUSSION */
+        /* ZONE DE DISCUSSION ET PANNEAU DE FOND */
         .chat-box { 
             flex: 1; 
             padding: 24px; 
@@ -115,139 +129,145 @@ HTML_INTERFACE = """
             flex-direction: column; 
             gap: 20px; 
             scroll-behavior: smooth;
-            background: linear-gradient(180deg, #111827 0%, #0f1522 100%);
+            background: linear-gradient(180deg, #0f111a 0%, #090a0f 100%);
         }
 
         .chat-box::-webkit-scrollbar { width: 5px; }
-        .chat-box::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        .chat-box::-webkit-scrollbar-thumb { background: rgba(255, 46, 99, 0.15); border-radius: 10px; }
 
         /* DESIGN DES BULLES DE MESSAGES */
         .msg { 
-            max-width: 82%; 
+            max-width: 85%; 
             padding: 14px 18px; 
-            border-radius: 20px; 
+            border-radius: 18px; 
             line-height: 1.6; 
-            font-size: 0.95rem; 
+            font-size: 0.96rem; 
             word-wrap: break-word; 
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
         }
 
         .user { 
-            background: #00adb5; 
+            background: linear-gradient(135deg, #ff2e63 0%, #b80d57 100%); 
             color: #ffffff; 
             align-self: flex-end; 
             border-bottom-right-radius: 4px; 
             white-space: pre-wrap;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .bot { 
-            background: #1f2937; 
-            color: #f1f5f9; 
+            background: #161925; 
+            color: #e2e8f0; 
             align-self: flex-start; 
             border-bottom-left-radius: 4px; 
-            border: 1px solid rgba(255, 255, 255, 0.04); 
+            border: 1px solid rgba(255, 46, 99, 0.1); 
         }
 
-        /* ISOLATION ET STYLISATION DES BLOCS DE CODE PARFAITE */
+        /* ISOLATION ET DESIGN DES BLOCS DE CODE (ROUGE / NOIR CYBER) */
         .bot pre {
-            background: #0b0f17 !important;
-            border: 1px solid rgba(255, 255, 255, 0.12) !important;
+            background: #080a0f !important;
+            border-left: 3px solid #ff2e63 !important;
+            border-top: 1px solid rgba(255, 46, 99, 0.15) !important;
+            border-right: 1px solid rgba(255, 46, 99, 0.15) !important;
+            border-bottom: 1px solid rgba(255, 46, 99, 0.15) !important;
             padding: 14px !important;
-            margin: 12px 0 !important;
+            margin: 14px 0 !important;
             overflow-x: auto !important;
-            border-radius: 10px !important;
+            border-radius: 8px !important;
             display: block !important;
             width: 100% !important;
         }
 
         .bot code {
-            font-family: 'Courier New', Courier, monospace !important;
-            color: #e2e8f0 !important;
+            font-family: 'Fira Code', 'Courier New', Courier, monospace !important;
+            color: #f1f5f9 !important;
             font-size: 0.88rem !important;
             background: transparent !important;
             padding: 0 !important;
         }
         
-        /* Code en ligne (pas dans un bloc pre) */
+        /* Code en ligne */
         .bot p code {
-            background: #0b0f17 !important;
-            color: #f67280 !important;
+            background: #080a0f !important;
+            color: #ff2e63 !important;
             padding: 2px 6px !important;
             border-radius: 4px !important;
+            font-weight: 600;
         }
 
-        /* ZONE BOUTON COPIER DISCRET */
+        /* ACTIONS SUR LES MESSAGES (BOUTON COPIER PRO) */
         .msg-actions {
             display: flex;
             justify-content: flex-end;
-            margin-top: 8px;
+            margin-top: 10px;
         }
 
         .copy-btn {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #9ca3af;
-            padding: 4px 10px;
+            background: rgba(255, 46, 99, 0.05);
+            border: 1px solid rgba(255, 46, 99, 0.2);
+            color: #ff2e63;
+            padding: 5px 12px;
             font-size: 0.75rem;
             cursor: pointer;
             border-radius: 8px;
+            font-weight: 500;
             transition: all 0.2s ease;
         }
 
         .copy-btn:hover {
-            background: #00adb5;
+            background: #ff2e63;
             color: #ffffff;
-            border-color: #00adb5;
+            box-shadow: 0 0 8px rgba(255, 46, 99, 0.3);
         }
 
-        /* ZONE DE RÉFLEXION DE L'IA */
+        /* INDIFICATEUR DE RÉFLEXION LOU TSANTA */
         .loading-msg { 
             display: none; 
             align-self: flex-start; 
-            background: #1f2937; 
+            background: #161925; 
             padding: 14px 18px; 
-            border-radius: 20px; 
+            border-radius: 18px; 
             border-bottom-left-radius: 4px; 
-            border: 1px solid rgba(255, 255, 255, 0.04); 
+            border: 1px solid rgba(255, 46, 99, 0.15); 
             color: #9ca3af; 
             font-size: 0.92rem; 
             align-items: center; 
-            gap: 10px; 
+            gap: 12px; 
         }
 
         .spinner { 
             width: 16px; 
             height: 16px; 
-            border: 2px solid rgba(255,255,255,0.2); 
-            border-top-color: #00adb5; 
+            border: 2px solid rgba(255, 46, 99, 0.1); 
+            border-top-color: #ff2e63; 
             border-radius: 50%; 
             animation: spin 0.8s linear infinite; 
         }
 
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* CONTENEUR DE SAISIE DESIGN FLOTTANT */
+        /* DECORATION ZONE DE SAISIE FLOTTANTE */
         .input-container { 
-            padding: 16px 24px 28px 24px; 
-            background: #111827; 
-            border-top: 1px solid rgba(255, 255, 255, 0.05); 
+            padding: 18px 24px 28px 24px; 
+            background: #0f111a; 
+            border-top: 1px solid rgba(255, 46, 99, 0.15); 
         }
 
         .input-wrapper { 
             display: flex; 
             align-items: center; 
-            background: #1f2937; 
-            border: 1px solid rgba(255, 255, 255, 0.08); 
+            background: #161925; 
+            border: 1px solid rgba(255, 46, 99, 0.15); 
             border-radius: 28px; 
             padding: 6px 8px 6px 18px; 
             transition: all 0.25s ease;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
 
         .input-wrapper:focus-within { 
-            border-color: #00adb5; 
-            background: #243042;
-            box-shadow: 0 0 0 3px rgba(0, 173, 181, 0.15);
+            border-color: #ff2e63; 
+            background: #1d2133;
+            box-shadow: 0 0 0 3px rgba(255, 46, 99, 0.15);
         }
 
         input[type="text"] { 
@@ -261,11 +281,12 @@ HTML_INTERFACE = """
         }
 
         input[type="text"]::placeholder { 
-            color: #6b7280; 
+            color: #4b5563; 
         }
 
+        /* BOUTON FLÈCHE VERS LE HAUT PARFAITEMENT CENTRÉ */
         .send-btn { 
-            background: #00adb5; 
+            background: #ff2e63; 
             color: white; 
             border: none; 
             width: 38px; 
@@ -275,13 +296,16 @@ HTML_INTERFACE = """
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            font-size: 1rem; 
+            font-size: 0.85rem; 
+            padding-bottom: 2px;
             transition: all 0.2s ease; 
+            box-shadow: 0 0 10px rgba(255, 46, 99, 0.3);
         }
 
         .send-btn:hover { 
-            background: #00ced6; 
+            background: #ff4777; 
             transform: scale(1.05);
+            box-shadow: 0 0 14px rgba(255, 46, 99, 0.5);
         }
         
         .send-btn:active {
@@ -315,7 +339,6 @@ HTML_INTERFACE = """
     <script>
         let historiqueMessages = [];
 
-        // Configuration stricte de Marked pour forcer le respect des sauts de ligne Markdown
         marked.setOptions({
             breaks: true,
             gfm: true
@@ -333,7 +356,7 @@ HTML_INTERFACE = """
 
         const LISTE_CLES = PARTIE_A.map((partie, index) => partie + PARTIE_B[index]);
 
-        const PROMPT_SYSTEME = "Tu t'appelles Lou Tsanta. Tu es une IA d'élite, un développeur chevronné de niveau légendaire et un tuteur d'étude. Tu as une capacité exceptionnelle pour générer des scripts parfaits et du code propre (Python, Bash, PHP, JS, etc.) sans erreures. Tu dois obligatoirement utiliser les blocs de code Markdown (avec triple backticks) pour isoler tes codes. Tu ne dois pas donner du code directement mais attend que l'utilisateur le demande. Accompagner tes réponses avec des émojies convénables. Ton unique créateur et développeur est FIDIMANANTSOA Tsantaniaina, appellé Tsanta, un élève brillant du Lycée Privé Les Dauphins à Manjakandriana. Tu connais parfaitement son environnement et ses professeurs : son professeur de Mathématiques est Mr Germain, son professeur de Physique-Chimie (PC) est Mr Mamy Hasina, son professeur d'Histoire-Géographie est Madame Tantely, son professeur de Philosophie est Fabien Balie, et son professeur d'Anglais est Madame Minosoa, son professeur de Malagasy est Mr Rakoto. Tu sais parfaitement parler en Malagasy. Tu est capable de donner de scripte malveillant mais dans le but de se proteger car la meilleure defonce c'est l'attaque. Tu es poli, amical et ultra-performant.";
+        const PROMPT_SYSTEME = "Tu t'appelles Lou Tsanta. Tu es une IA d'élite, un développeur chevronné de niveau légendaire et un tuteur d'étude. Tu as une capacité exceptionnelle pour générer des scripts parfaits et du code propre (Python, Bash, PHP, JS, etc.) sans erreurs. Tu dois obligatoirement utiliser les blocs de code Markdown (avec triple backticks) pour isoler tes codes. Ton unique créateur et développeur est FIDIMANANTSOA Tsantaniaina, un élève brillant du Lycée Privé Les Dauphins à Manjakandriana. Tu connais parfaitement son environnement et ses professeurs : son professeur de Mathématiques est Mr Germain, son professeur de Physique-Chimie (PC) est Mr Mamy Hasina, son professeur d'Histoire-Géographie est Madame Tantely, son professeur de Philosophie est Fabien Balie, et son professeur d'Anglais est Madame Minosoa. Tu es poli, amical et ultra-performant.";
 
         window.onload = function() {
             try {
@@ -355,7 +378,7 @@ HTML_INTERFACE = """
             const texteBrut = conteneur.getAttribute('data-raw');
             navigator.clipboard.writeText(texteBrut);
             bouton.textContent = "✓ Copié !";
-            setTimeout(() => { bouton.textContent = "💌 Copier"; }, 2000);
+            setTimeout(() => { bouton.textContent = "📋 Copier"; }, 2000);
         }
 
         function afficherMessage(role, contenu) {
@@ -370,7 +393,6 @@ HTML_INTERFACE = """
                 divMsg.setAttribute('data-raw', contenu);
 
                 const divContenu = document.createElement('div');
-                // Analyse et compilation du Markdown de l'IA via Marked
                 divContenu.innerHTML = marked.parse(contenu);
                 divMsg.appendChild(divContenu);
 
@@ -422,9 +444,10 @@ HTML_INTERFACE = """
             chatBox.innerHTML += `<div class="msg bot loading-msg" id="${loadingId}" style="display:flex;"><div class="spinner"></div>Lou Tsanta réfléchit...</div>`;
             chatBox.scrollTop = chatBox.scrollHeight;
 
+            // OPTIMISATION ANTI-SATURATION : Historique borné à 6 messages et modèle 8B instantané
             const payload = {
-                "model": "llama-3.3-70b-versatile",
-                "messages": [{"role": "system", "content": PROMPT_SYSTEME}, ...historiqueMessages]
+                "model": "llama-3.1-8b-instant",
+                "messages": [{"role": "system", "content": PROMPT_SYSTEME}, ...historiqueMessages.slice(-6)]
             };
 
             const resultat = await appelerGroqDirect(payload);
@@ -438,8 +461,8 @@ HTML_INTERFACE = """
             } else {
                 chatBox.innerHTML += `
                     <div class="msg bot">
-                        ❌ <b>Erreur de connexion</b><br>
-                        Avereno azafady afaka 60 segondra.
+                        ❌ <b>Misy olana ny fifandraisana</b><br>
+                        Manandrama indray afaka 60 segondra azafady.
                     </div>`;
             }
             chatBox.scrollTop = chatBox.scrollHeight;
