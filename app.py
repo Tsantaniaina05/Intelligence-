@@ -5,7 +5,7 @@ from flask import Flask, render_template_string, request, jsonify
 
 app = Flask(__name__)
 
-# Emplacement de la base de données (Adapté pour le cloud gratuit Render)
+# Emplacement de la base de données (Adapté pour Render)
 if os.path.exists("/opt/render/project/src"):
     DB_FILE = "/tmp/database.db"
 else:
@@ -32,10 +32,11 @@ def init_db():
             timestamp TEXT NOT NULL
         )
     ''')
-    # Création automatique du compte Admin avec ton identifiant personnalisé
-    cursor.execute("SELECT * FROM users WHERE username = '038MJ000233'")
+    
+    # PARAMÈTRES PAR DÉFAUT : Identifiant/Mot de passe = 038mj000233 | Nom = Tsanta
+    cursor.execute("SELECT * FROM users WHERE username = '038mj000233'")
     if not cursor.fetchone():
-        cursor.execute("INSERT INTO users (username, password, name, is_approved) VALUES ('038MJ000233', 'admin123', 'Tsanta Creator', 1)")
+        cursor.execute("INSERT INTO users (username, password, name, is_approved) VALUES ('038mj000233', '038mj000233', 'Tsanta', 1)")
     conn.commit()
     conn.close()
 
@@ -45,7 +46,7 @@ except Exception as e:
     print(f"⚠️ Erreur SQLite : {e}")
 
 # ========================================================
-# INTERFACE SÉCURISÉE (CORRIGÉE POUR LE DÉBORDEMENT TEXTE)
+# INTERFACE SÉCURISÉE AVEC EXEMPLES NEUTRES (ANTI-PIRATES)
 # ========================================================
 HTML_INTERFACE = """
 <!DOCTYPE html>
@@ -92,31 +93,9 @@ HTML_INTERFACE = """
 
         .chat-box { flex: 1; padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; background: linear-gradient(180deg, #0f111a 0%, #090a0f 100%); }
         
-        /* CORRECTIFS ANTI-DÉBORDEMENT */
-        .msg { 
-            max-width: 85%; 
-            padding: 14px 18px; 
-            border-radius: 18px; 
-            line-height: 1.6; 
-            font-size: 0.96rem; 
-            word-wrap: break-word;
-            word-break: break-word; /* Force la coupure des mots trop longs */
-        }
-        .msg pre {
-            background: #080a0f;
-            padding: 12px;
-            border-radius: 8px;
-            margin: 8px 0;
-            overflow-x: auto; /* Ajoute un défilement horizontal interne pour le code */
-            max-width: 100%;
-            border: 1px solid rgba(255, 46, 99, 0.15);
-        }
-        .msg code {
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 0.88rem;
-            white-space: pre-wrap; /* Évite que les lignes de code s'étirent à l'infini */
-            word-break: break-all;
-        }
+        .msg { max-width: 85%; padding: 14px 18px; border-radius: 18px; line-height: 1.6; font-size: 0.96rem; word-wrap: break-word; word-break: break-word; }
+        .msg pre { background: #080a0f; padding: 12px; border-radius: 8px; margin: 8px 0; overflow-x: auto; max-width: 100%; border: 1px solid rgba(255, 46, 99, 0.15); }
+        .msg code { font-family: 'Courier New', Courier, monospace; font-size: 0.88rem; white-space: pre-wrap; word-break: break-all; }
         
         .user { background: linear-gradient(135deg, #ff2e63 0%, #b80d57 100%); color: #ffffff; align-self: flex-end; border-bottom-right-radius: 4px; }
         .bot { background: #161925; color: #e2e8f0; align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid rgba(255, 46, 99, 0.1); }
@@ -150,14 +129,15 @@ HTML_INTERFACE = """
 <body>
 
     <div class="auth-overlay" id="authOverlay">
-        <!-- FORMULAIRE CONNEXION -->
+        <!-- FORMULAIRE DE CONNEXION SÉCURISÉ (EXEMPLE BROUILLÉ) -->
         <div class="auth-box" id="loginBox">
             <h2>Connexion Système</h2>
             <p>Accède à ton instance Lou Tsanta</p>
             <form onsubmit="soumettreConnexion(event)">
                 <div class="form-group">
                     <label>Identifiant</label>
-                    <input type="text" id="loginUser" class="input-control" required placeholder="Ex: 038MJ000233">
+                    <!-- Sécurité : L'exemple montre "rabe" pour égarer les curieux -->
+                    <input type="text" id="loginUser" class="input-control" required placeholder="Ex: rabe">
                 </div>
                 <div class="form-group">
                     <label>Mot de passe</label>
@@ -168,18 +148,18 @@ HTML_INTERFACE = """
             <button type="button" class="switch-btn" onclick="basculerAuth(true, event)">Créer un nouveau compte</button>
         </div>
         
-        <!-- FORMULAIRE INSCRIPTION -->
+        <!-- FORMULAIRE D'INSCRIPTION SÉCURISÉ -->
         <div class="auth-box" id="registerBox" style="display: none;">
             <h2>Créer un compte</h2>
             <p>Remplis le formulaire d'accès</p>
             <form onsubmit="soumettreInscription(event)">
                 <div class="form-group">
                     <label>Nom complet</label>
-                    <input type="text" id="regName" class="input-control" required placeholder="Ex: Utilisateur">
+                    <input type="text" id="regName" class="input-control" required placeholder="Ex: Rabe">
                 </div>
                 <div class="form-group">
                     <label>Identifiant désiré</label>
-                    <input type="text" id="regUser" class="input-control" required placeholder="Ex: user10">
+                    <input type="text" id="regUser" class="input-control" required placeholder="Ex: user123">
                 </div>
                 <div class="form-group">
                     <label>Mot de passe</label>
@@ -231,11 +211,10 @@ HTML_INTERFACE = """
 
         marked.setOptions({ breaks: true, gfm: true });
 
-        const PARTIE_A = ["gsk_FfwvUhtrQe0buPGq1ZbC", "gsk_jkmG1w3fYMeIPW3zkcIA", "gsk_k5oZjjcuEYcySKmAbQD6", "gsk_fmdEXujMozLZtcosjue", "gsk_T9OSlCCbyz348SgGiqqq", "gsk_PUELW9UBJfOu80IKlOpA", "gsk_7BDECcx7arZ3IssuLKCw", "gsk_B6tXb5B57pnkb1x8V8Ua"];
+        const PARTIE_A = ["gsk_FfwvUhtrQe0buPGq1ZbC", "gsk_jkmG1w3fYMeIPW3zkcIA", "gsk_k5oZjjcuEYcySKmAbQD6", "gsk_fmdEXujMozLZtcosqjue", "gsk_T9OSlCCbyz348SgGiqqq", "gsk_PUELW9UBJfOu80IKlOpA", "gsk_7BDECcx7arZ3IssuLKCw", "gsk_B6tXb5B57pnkb1x8V8Ua"];
         const PARTIE_B = ["WGdyb3FYeQJs0BMlAlPxfdmErv2KCSah", "WGdyb3FYcThin2ynbGjT7uoMlnL2NQdX", "WGdyb3FYspoPWbFxFthXFCmbblM37syz", "WGdyb3FYHKCy8hJgMfUdHLbbvok5Ngwq", "WGdyb3FYFwAXrPQ65YuKJSdW8bPIME35", "WGdyb3FYuPTeSgYwdqeysM51gAKKsrKd", "WGdyb3FYdUp8CBPdUEcc0CNH78Q0QJcD", "WGdyb3FYFoqPUOakMVCarOooeiLU3k6H"];
         const LISTE_CLES = PARTIE_A.map((p, i) => p + PARTIE_B[i]);
         
-        // PROMPT SYSTEME MIS À JOUR
         const PROMPT_SYSTEME = "Tu t'appelles Lou Tsanta. Tu es une IA d'élite créée par FIDIMANANTSOA Tsantaniaina, un jeune homme de 19 ans qui est un ancien élève de la section scientifique (Première S) du Lycée Privé Les Dauphins.";
 
         window.onload = function() {
@@ -299,7 +278,7 @@ HTML_INTERFACE = """
 
         function masquerAuthEtDemarrer() {
             document.getElementById('authOverlay').style.display = 'none';
-            if (sessionUtilisateur.username === '038MJ000233') {
+            if (sessionUtilisateur.username === '038mj000233') {
                 document.getElementById('adminToggleBtn').style.display = 'block';
             }
             document.getElementById('chatBox').innerHTML = "";
@@ -338,7 +317,7 @@ HTML_INTERFACE = """
                 cUsers.innerHTML = "";
                 
                 users.forEach(u => {
-                    if(u.username === '038MJ000233') return;
+                    if(u.username === '038mj000233') return;
                     const badge = u.is_approved ? '<span class="badge approved">Validé</span>' : '<span class="badge pending">En attente</span>';
                     const button = u.is_approved ? 
                         `<button type="button" class="act-btn block" onclick="modifierStatut(${u.id}, 0)">Bloquer</button>` : 
