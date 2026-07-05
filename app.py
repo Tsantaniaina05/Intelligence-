@@ -151,7 +151,7 @@ HTML_INTERFACE = """
             <form onsubmit="soumettreInscription(event)">
                 <div class="form-group">
                     <label>Nom complet</label>
-                    <input type="text" id="regName" class="input-control" required placeholder="Ex: Saniah">
+                    <input type="text" id="regName" class="input-control" required placeholder="Ex: Lou tsanta">
                 </div>
                 <div class="form-group">
                     <label>Identifiant désiré</label>
@@ -210,7 +210,7 @@ HTML_INTERFACE = """
         const PARTIE_A = ["gsk_FfwvUhtrQe0buPGq1ZbC", "gsk_jkmG1w3fYMeIPW3zkcIA", "gsk_k5oZjjcuEYcySKmAbQD6", "gsk_fmdEXujMozLZtcosqjue", "gsk_T9OSlCCbyz348SgGiqqq", "gsk_PUELW9UBJfOu80IKlOpA", "gsk_7BDECcx7arZ3IssuLKCw", "gsk_B6tXb5B57pnkb1x8V8Ua"];
         const PARTIE_B = ["WGdyb3FYeQJs0BMlAlPxfdmErv2KCSah", "WGdyb3FYcThin2ynbGjT7uoMlnL2NQdX", "WGdyb3FYspoPWbFxFthXFCmbblM37syz", "WGdyb3FYHKCy8hJgMfUdHLbbvok5Ngwq", "WGdyb3FYFwAXrPQ65YuKJSdW8bPIME35", "WGdyb3FYuPTeSgYwdqeysM51gAKKsrKd", "WGdyb3FYdUp8CBPdUEcc0CNH78Q0QJcD", "WGdyb3FYFoqPUOakMVCarOooeiLU3k6H"];
         const LISTE_CLES = PARTIE_A.map((p, i) => p + PARTIE_B[i]);
-        const PROMPT_SYSTEME = "Tu t'appelles Lou Tsanta. Tu es une IA d'élite créée par FIDIMANANTSOA Tsantaniaina, élève en Première S au Lycée Privé Les Dauphins.";
+        const PROMPT_SYSTEME = "Tu t'appelles Lou Tsanta. Tu dois ajouter des emojis inhabituelle mais qui correspond à chaque réponses. Tu es une IA d'élite créée par FIDIMANANTSOA Tsantaniaina, élève en Première S au Lycée Privé Les Dauphins.";
 
         window.onload = function() {
             const savedSession = localStorage.getItem('lou_tsanta_render_session');
