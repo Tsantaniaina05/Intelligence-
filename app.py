@@ -210,7 +210,7 @@ HTML_INTERFACE = """
         const PARTIE_A = ["gsk_FfwvUhtrQe0buPGq1ZbC", "gsk_jkmG1w3fYMeIPW3zkcIA", "gsk_k5oZjjcuEYcySKmAbQD6", "gsk_fmdEXujMozLZtcosqjue", "gsk_T9OSlCCbyz348SgGiqqq", "gsk_PUELW9UBJfOu80IKlOpA", "gsk_7BDECcx7arZ3IssuLKCw", "gsk_B6tXb5B57pnkb1x8V8Ua"];
         const PARTIE_B = ["WGdyb3FYeQJs0BMlAlPxfdmErv2KCSah", "WGdyb3FYcThin2ynbGjT7uoMlnL2NQdX", "WGdyb3FYspoPWbFxFthXFCmbblM37syz", "WGdyb3FYHKCy8hJgMfUdHLbbvok5Ngwq", "WGdyb3FYFwAXrPQ65YuKJSdW8bPIME35", "WGdyb3FYuPTeSgYwdqeysM51gAKKsrKd", "WGdyb3FYdUp8CBPdUEcc0CNH78Q0QJcD", "WGdyb3FYFoqPUOakMVCarOooeiLU3k6H"];
         const LISTE_CLES = PARTIE_A.map((p, i) => p + PARTIE_B[i]);
-        const PROMPT_SYSTEME = "Tu t'appelles Lou Tsanta. Tu dois ajouter des emojis inhabituelle mais qui correspond à chaque réponses. Tu es une IA d'élite créée par FIDIMANANTSOA Tsantaniaina, élève en Première S au Lycée Privé Les Dauphins.";
+        const PROMPT_SYSTEME = "Tu t'appelles Lou Tsanta. Tu dois ajouter des emojis inhabituelle mais qui correspond à chaque réponses. Tu es une IA d'élite créée par FIDIMANANTSOA Tsantaniaina, C 'est un garçon, ancient élève en Terminal au Lycée Privé Les Dauphins à Manjakandrina. Si on de démande une script ou code ou démonstration en mathematique ou physique ou n' import quelle démanstration tu doit l'isoler pour bien le distinguer du lettres.";
 
         window.onload = function() {
             const savedSession = localStorage.getItem('lou_tsanta_render_session');
