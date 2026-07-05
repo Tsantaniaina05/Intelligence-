@@ -46,33 +46,71 @@ except Exception as e:
     print(f"⚠️ Erreur SQLite : {e}")
 
 # ========================================================
-# INTERFACE SÉCURISÉE AVEC EXEMPLES NEUTRES (ANTI-PIRATES)
+# INTERFACE CORRIGÉE POUR L'AFFICHAGE DU CLAVIER MOBILE
 # ========================================================
 HTML_INTERFACE = """
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Lou Tsanta — Cloud Auth</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-        body { background-color: #080a0f; color: #f1f5f9; display: flex; justify-content: center; height: 100vh; height: 100dvh; overflow: hidden; }
         
+        /* Correction clavier : Changement de height en min-height et suppression du overflow strict sur le body */
+        body { 
+            background-color: #080a0f; 
+            color: #f1f5f9; 
+            display: flex; 
+            justify-content: center; 
+            min-height: 100vh; 
+            min-height: 100dvh; 
+        }
+        
+        /* Conteneur principal flexible */
         .chat-container { 
-            width: 100%; max-width: 850px; display: flex; flex-direction: column; height: 100vh; height: 100dvh; 
-            background: #0f111a; position: relative; border-left: 1px solid rgba(255, 46, 99, 0.08); border-right: 1px solid rgba(255, 46, 99, 0.08);
+            width: 100%; 
+            max-width: 850px; 
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh;
+            height: 100dvh;
+            background: #0f111a; 
+            position: relative; 
+            border-left: 1px solid rgba(255, 46, 99, 0.08); 
+            border-right: 1px solid rgba(255, 46, 99, 0.08);
         }
 
+        /* Correction overlay : fixed au lieu de absolute pour s'adapter au redimensionnement du clavier */
         .auth-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #080a0f;
-            z-index: 100; display: flex; justify-content: center; align-items: center; padding: 20px;
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: #080a0f;
+            z-index: 100; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            padding: 20px;
+            overflow-y: auto; /* Permet de défiler si le clavier prend trop de place */
         }
+        
         .auth-box {
-            background: #161925; border: 1px solid rgba(255, 46, 99, 0.25); box-shadow: 0 0 30px rgba(255, 46, 99, 0.15);
-            padding: 30px; border-radius: 24px; width: 100%; max-width: 400px; text-align: center;
+            background: #161925; 
+            border: 1px solid rgba(255, 46, 99, 0.25); 
+            box-shadow: 0 0 30px rgba(255, 46, 99, 0.15);
+            padding: 30px; 
+            border-radius: 24px; 
+            width: 100%; 
+            max-width: 400px; 
+            text-align: center;
+            margin: auto; /* Centre verticalement dans l'overlay déroulant */
         }
+        
         .auth-box h2 { font-size: 1.4rem; color: #ffffff; margin-bottom: 8px; }
         .auth-box p { font-size: 0.85rem; color: #9ca3af; margin-bottom: 20px; }
         
@@ -129,14 +167,12 @@ HTML_INTERFACE = """
 <body>
 
     <div class="auth-overlay" id="authOverlay">
-        <!-- FORMULAIRE DE CONNEXION SÉCURISÉ (EXEMPLE BROUILLÉ) -->
         <div class="auth-box" id="loginBox">
             <h2>Connexion Système</h2>
             <p>Accède à ton instance Lou Tsanta</p>
             <form onsubmit="soumettreConnexion(event)">
                 <div class="form-group">
                     <label>Identifiant</label>
-                    <!-- Sécurité : L'exemple montre "rabe" pour égarer les curieux -->
                     <input type="text" id="loginUser" class="input-control" required placeholder="Ex: rabe">
                 </div>
                 <div class="form-group">
@@ -148,7 +184,6 @@ HTML_INTERFACE = """
             <button type="button" class="switch-btn" onclick="basculerAuth(true, event)">Créer un nouveau compte</button>
         </div>
         
-        <!-- FORMULAIRE D'INSCRIPTION SÉCURISÉ -->
         <div class="auth-box" id="registerBox" style="display: none;">
             <h2>Créer un compte</h2>
             <p>Remplis le formulaire d'accès</p>
@@ -211,11 +246,11 @@ HTML_INTERFACE = """
 
         marked.setOptions({ breaks: true, gfm: true });
 
-        const PARTIE_A = ["gsk_FfwvUhtrQe0buPGq1ZbC", "gsk_jkmG1w3fYMeIPW3zkcIA", "gsk_k5oZjjcuEYcySKmAbQD6", "gsk_fmdEXujMozLZtcosqjue", "gsk_T9OSlCCbyz348SgGiqqq", "gsk_PUELW9UBJfOu80IKlOpA", "gsk_7BDECcx7arZ3IssuLKCw", "gsk_B6tXb5B57pnkb1x8V8Ua"];
+        const PARTIE_A = ["gsk_FfwvUhtrQe0buPGq1ZbC", "gsk_jkmG1w3fYMeIPW3zkcIA", "gsk_k5oZjjcuEYcySKmAbQD6", "gsk_fmdEXujMozLZtcosjue", "gsk_T9OSlCCbyz348SgGiqqq", "gsk_PUELW9UBJfOu80IKlOpA", "gsk_7BDECcx7arZ3IssuLKCw", "gsk_B6tXb5B57pnkb1x8V8Ua"];
         const PARTIE_B = ["WGdyb3FYeQJs0BMlAlPxfdmErv2KCSah", "WGdyb3FYcThin2ynbGjT7uoMlnL2NQdX", "WGdyb3FYspoPWbFxFthXFCmbblM37syz", "WGdyb3FYHKCy8hJgMfUdHLbbvok5Ngwq", "WGdyb3FYFwAXrPQ65YuKJSdW8bPIME35", "WGdyb3FYuPTeSgYwdqeysM51gAKKsrKd", "WGdyb3FYdUp8CBPdUEcc0CNH78Q0QJcD", "WGdyb3FYFoqPUOakMVCarOooeiLU3k6H"];
         const LISTE_CLES = PARTIE_A.map((p, i) => p + PARTIE_B[i]);
         
-        const PROMPT_SYSTEME = "Tu t'appelles Lou Tsanta. Tu es une IA d'élite créée par FIDIMANANTSOA Tsantaniaina, un jeune homme qui est un ancien élève de la section scientifique (Terminale D) du Lycée Privé Les Dauphins. Tes réponses doivent accompagné avec des émojies inhabituel mais qui correspond avec les reponse. Tu sais communiquer avec tous les langues existants";
+        const PROMPT_SYSTEME = "Tu t'appelles Lou Tsanta. Tu es une IA d'élite créée par FIDIMANANTSOA Tsantaniaina, un jeune homme qui est un ancien élève de la section scientifique (Terminal D) du Lycée Privé Les Dauphins. Toutes Tes réponses doivent êtres acompagné des émojies inhabithuel mais qui convienne au réponses";
 
         window.onload = function() {
             const savedSession = localStorage.getItem('lou_tsanta_render_session');
