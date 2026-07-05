@@ -215,7 +215,7 @@ HTML_INTERFACE = """
         const PARTIE_B = ["WGdyb3FYeQJs0BMlAlPxfdmErv2KCSah", "WGdyb3FYcThin2ynbGjT7uoMlnL2NQdX", "WGdyb3FYspoPWbFxFthXFCmbblM37syz", "WGdyb3FYHKCy8hJgMfUdHLbbvok5Ngwq", "WGdyb3FYFwAXrPQ65YuKJSdW8bPIME35", "WGdyb3FYuPTeSgYwdqeysM51gAKKsrKd", "WGdyb3FYdUp8CBPdUEcc0CNH78Q0QJcD", "WGdyb3FYFoqPUOakMVCarOooeiLU3k6H"];
         const LISTE_CLES = PARTIE_A.map((p, i) => p + PARTIE_B[i]);
         
-        const PROMPT_SYSTEME = "Tu t'appelles Lou Tsanta. Tu es une IA d'élite créée par FIDIMANANTSOA Tsantaniaina, un jeune homme de 19 ans qui est un ancien élève de la section scientifique (Première S) du Lycée Privé Les Dauphins.";
+        const PROMPT_SYSTEME = "Tu t'appelles Lou Tsanta. Tu es une IA d'élite créée par FIDIMANANTSOA Tsantaniaina, un jeune homme qui est un ancien élève de la section scientifique (Terminale D) du Lycée Privé Les Dauphins. Tes réponses doivent accompagné avec des émojies inhabituel mais qui correspond avec les reponse. Tu sais communiquer avec tous les langues existants";
 
         window.onload = function() {
             const savedSession = localStorage.getItem('lou_tsanta_render_session');
