@@ -3,7 +3,7 @@ from flask import Flask, render_template_string
 
 app = Flask(__name__)
 
-# INTERFACE PREMIUM V3 - RED CRIMSON EXPERT EDITION
+# INTERFACE V3 - EDITION ROUGE CRIMSON AVEC FORMULAIRE DE BIENVENUE
 HTML_INTERFACE = """
 <!DOCTYPE html>
 <html lang="fr">
@@ -36,6 +36,88 @@ HTML_INTERFACE = """
             position: relative;
             border-left: 1px solid rgba(255, 46, 99, 0.08);
             border-right: 1px solid rgba(255, 46, 99, 0.08);
+        }
+
+        /* FORMULAIRE D'ACCUEIL (POP-UP PRÉNOM) */
+        .welcome-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(8, 10, 15, 0.95);
+            backdrop-filter: blur(20px);
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .welcome-box {
+            background: #161925;
+            border: 1px solid rgba(255, 46, 99, 0.3);
+            box-shadow: 0 0 30px rgba(255, 46, 99, 0.15);
+            padding: 30px;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+        }
+
+        .welcome-box h2 {
+            font-size: 1.5rem;
+            color: #ffffff;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(255, 46, 99, 0.3);
+        }
+
+        .welcome-box p {
+            font-size: 0.9rem;
+            color: #9ca3af;
+            margin-bottom: 24px;
+        }
+
+        .welcome-input-wrapper {
+            display: flex;
+            background: #080a0f;
+            border: 1px solid rgba(255, 46, 99, 0.2);
+            border-radius: 16px;
+            padding: 4px 6px 4px 14px;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .welcome-input-wrapper:focus-within {
+            border-color: #ff2e63;
+            box-shadow: 0 0 10px rgba(255, 46, 99, 0.2);
+        }
+
+        .welcome-input-wrapper input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: white;
+            outline: none;
+            font-size: 1rem;
+            padding: 10px 0;
+        }
+
+        .welcome-btn {
+            background: linear-gradient(135deg, #ff2e63 0%, #b80d57 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 14px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            width: 100%;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(255, 46, 99, 0.3);
+        }
+
+        .welcome-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(255, 46, 99, 0.45);
         }
 
         /* HEADER DÉCORÉ ULTRA PRO */
@@ -284,7 +366,7 @@ HTML_INTERFACE = """
             color: #4b5563; 
         }
 
-        /* BOUTON FLÈCHE VERS LE HAUT PARFAITEMENT CENTRÉ */
+        /* BOUTON FLÈCHE VERS LE HAUT CENTRÉ */
         .send-btn { 
             background: #ff2e63; 
             color: white; 
@@ -314,6 +396,17 @@ HTML_INTERFACE = """
     </style>
 </head>
 <body>
+    <div class="welcome-overlay" id="welcomeOverlay">
+        <div class="welcome-box">
+            <h2>Initialisation du Système</h2>
+            <p>Identifie-toi pour établir la connexion avec Lou Tsanta</p>
+            <div class="welcome-input-wrapper">
+                <input type="text" id="usernameInput" placeholder="Écris ton nom ici..." onkeydown="if(event.key === 'Enter') validerNomUtilisateur()">
+            </div>
+            <button class="welcome-btn" onclick="validerNomUtilisateur()">Accéder à l'IA</button>
+        </div>
+    </div>
+
     <div class="chat-container">
         <div class="header">
             <div class="header-titles">
@@ -338,6 +431,7 @@ HTML_INTERFACE = """
     
     <script>
         let historiqueMessages = [];
+        let nomUtilisateur = "";
 
         marked.setOptions({
             breaks: true,
@@ -358,19 +452,51 @@ HTML_INTERFACE = """
 
         const PROMPT_SYSTEME = "Tu t'appelles Lou Tsanta. Tu es une IA d'élite, un développeur chevronné de niveau légendaire et un tuteur d'étude. Tu as une capacité exceptionnelle pour générer des scripts parfaits et du code propre (Python, Bash, PHP, JS, etc.) sans erreurs. Tu dois obligatoirement utiliser les blocs de code Markdown (avec triple backticks) pour isoler tes codes. Ton unique créateur et développeur est FIDIMANANTSOA Tsantaniaina, un élève brillant du Lycée Privé Les Dauphins à Manjakandriana. Tu connais parfaitement son environnement et ses professeurs : son professeur de Mathématiques est Mr Germain, son professeur de Physique-Chimie (PC) est Mr Mamy Hasina, son professeur d'Histoire-Géographie est Madame Tantely, son professeur de Philosophie est Fabien Balie, et son professeur d'Anglais est Madame Minosoa. Tu es poli, amical et ultra-performant.";
 
-        window.onload = function() {
+        // FONCTION APPELÉE LORS DE LA VALIDATION DU FORMULAIRE D'ENTRÉE
+        function validerNomUtilisateur() {
+            const inputNom = document.getElementById('usernameInput');
+            const nomSaisi = inputNom.value.trim();
+            
+            if (!nomSaisi) {
+                alert("S'il te plaît, entre un nom valide pour continuer !");
+                return;
+            }
+            
+            nomUtilisateur = nomSaisi;
+            
+            // Fait disparaître en fondu le formulaire pop-up
+            const overlay = document.getElementById('welcomeOverlay');
+            overlay.style.opacity = "0";
+            setTimeout(() => {
+                overlay.style.display = "none";
+            }, 400);
+
+            // Génère le message d'accueil personnalisé instantanément
+            initialiserDiscussion();
+        }
+
+        function initialiserDiscussion() {
             try {
                 localStorage.clear();
-                afficherMessage("assistant", "Bonjour ! Je suis **Lou Tsanta**, ton compagnon IA et expert en programmation. Comment puis-je t'aider aujourd'hui, Tsanta ? ⚡");
+                const welcomeText = `Bonjour **${nomUtilisateur}** ! Je suis **Lou Tsanta**, ton compagnon IA d'élite et expert en programmation. Comment puis-je t'aider aujourd'hui ? ⚡`;
+                afficherMessage("assistant", welcomeText);
             } catch (e) {
-                document.getElementById('chatBox').innerHTML = `<div class="msg bot">Bonjour ! Je suis Lou Tsanta. Pose-moi tes questions ! ⚡</div>`;
+                document.getElementById('chatBox').innerHTML = `<div class="msg bot">Bonjour ! Je suis Lou Tsanta. ⚡</div>`;
             }
-        };
+        }
 
         function reinitialiserDiscussion() {
             localStorage.clear();
             historiqueMessages = [];
-            document.getElementById('chatBox').innerHTML = `<div class="msg bot">Discussion réinitialisée ! Je suis Lou Tsanta. ⚡</div>`;
+            document.getElementById('chatBox').innerHTML = "";
+            
+            // Fait réapparaître le formulaire pop-up lors du reset
+            const overlay = document.getElementById('welcomeOverlay');
+            document.getElementById('usernameInput').value = "";
+            overlay.style.display = "flex";
+            setTimeout(() => {
+                overlay.style.opacity = "1";
+            }, 500);
         }
 
         function executerCopieMessage(bouton) {
@@ -444,7 +570,6 @@ HTML_INTERFACE = """
             chatBox.innerHTML += `<div class="msg bot loading-msg" id="${loadingId}" style="display:flex;"><div class="spinner"></div>Lou Tsanta réfléchit...</div>`;
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            // OPTIMISATION ANTI-SATURATION : Historique borné à 6 messages et modèle 8B instantané
             const payload = {
                 "model": "llama-3.1-8b-instant",
                 "messages": [{"role": "system", "content": PROMPT_SYSTEME}, ...historiqueMessages.slice(-6)]
