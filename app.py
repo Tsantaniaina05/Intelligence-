@@ -5,7 +5,7 @@ from flask import Flask, render_template_string, request, jsonify
 
 app = Flask(__name__)
 
-# Emplacement de la base de données (Adapté pour Render)
+# Emplacement de la base de données adapté pour Render
 if os.path.exists("/opt/render/project/src"):
     DB_FILE = "/tmp/database.db"
 else:
@@ -32,7 +32,6 @@ def init_db():
             timestamp TEXT NOT NULL
         )
     ''')
-    # Table modifiée pour regrouper l'historique par sessions de discussion (titres)
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS chat_history (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -45,7 +44,7 @@ def init_db():
         )
     ''')
     
-    # PARAMÈTRES PAR DÉFAUT : Identifiant/Mot de passe = 038mj000233 | Nom = Tsanta
+    # Compte administrateur permanent
     cursor.execute("SELECT * FROM users WHERE username = '038mj000233'")
     if not cursor.fetchone():
         cursor.execute("INSERT INTO users (username, password, name, is_approved) VALUES ('038mj000233', '038mj000233', 'Tsanta', 1)")
@@ -58,7 +57,7 @@ except Exception as e:
     print(f"⚠️ Erreur SQLite : {e}")
 
 # ========================================================
-# INTERFACE MODERNISÉE INSPIRÉE DE SCREENSHOT_20260705-172233.JPG
+# INTERFACE MODERNISÉE AVEC NOUVELLES COULEURS (CYAN/BLEU & ROUGE)
 # ========================================================
 HTML_INTERFACE = """
 <!DOCTYPE html>
@@ -66,25 +65,25 @@ HTML_INTERFACE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Lou Tsanta — Cloud Auth</title>
+    <title>Lou Tsanta — Panel</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
         
         body { 
-            background-color: #0d0f14; 
-            color: #f1f5f9; 
+            background-color: #0b0c10; 
+            color: #c5c6c7; 
             display: flex; 
             min-height: 100vh; 
             min-height: 100dvh; 
             overflow: hidden;
         }
         
-        /* SIDEBAR (Menu latéral inspiré du screenshot) */
+        /* SIDEBAR (Thème sombre & Cyan) */
         .sidebar {
             width: 280px;
-            background: #131722;
-            border-right: 1px solid rgba(255, 46, 99, 0.1);
+            background: #1f2833;
+            border-right: 1px solid rgba(0, 173, 181, 0.15);
             display: flex;
             flex-direction: column;
             transition: transform 0.3s ease;
@@ -96,7 +95,7 @@ HTML_INTERFACE = """
             display: flex;
             align-items: center;
             justify-content: space-between;
-            border-bottom: 1px solid rgba(255, 46, 99, 0.05);
+            border-bottom: 1px solid rgba(0, 173, 181, 0.1);
         }
         
         .sidebar-brand {
@@ -111,16 +110,16 @@ HTML_INTERFACE = """
         .sidebar-brand span {
             width: 8px;
             height: 8px;
-            background: #ff2e63;
+            background: #00adb5;
             border-radius: 50%;
-            box-shadow: 0 0 8px #ff2e63;
+            box-shadow: 0 0 8px #00adb5;
         }
         
         .btn-new-chat {
             margin: 15px 20px;
-            background: rgba(255, 46, 99, 0.1);
-            border: 1px solid rgba(255, 46, 99, 0.3);
-            color: #ff2e63;
+            background: rgba(0, 173, 181, 0.1);
+            border: 1px solid rgba(0, 173, 181, 0.3);
+            color: #00adb5;
             padding: 12px;
             border-radius: 12px;
             cursor: pointer;
@@ -133,8 +132,8 @@ HTML_INTERFACE = """
         }
         
         .btn-new-chat:hover {
-            background: #ff2e63;
-            color: white;
+            background: #00adb5;
+            color: #1f2833;
         }
         
         .history-section {
@@ -145,11 +144,12 @@ HTML_INTERFACE = """
         
         .history-title {
             font-size: 0.75rem;
-            color: #6b7280;
+            color: #66fcf1;
             text-transform: uppercase;
             font-weight: 700;
             margin-bottom: 10px;
             padding-left: 8px;
+            opacity: 0.8;
         }
         
         .history-item {
@@ -158,7 +158,7 @@ HTML_INTERFACE = """
             border-radius: 10px;
             cursor: pointer;
             font-size: 0.9rem;
-            color: #9ca3af;
+            color: #c5c6c7;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -167,15 +167,15 @@ HTML_INTERFACE = """
         }
         
         .history-item:hover, .history-item.active {
-            background: rgba(255, 46, 99, 0.05);
+            background: rgba(0, 173, 181, 0.1);
             color: #ffffff;
-            border-left: 3px solid #ff2e63;
+            border-left: 3px solid #00adb5;
         }
 
         .sidebar-footer {
             padding: 15px 20px;
-            background: #0d0f14;
-            border-top: 1px solid rgba(255, 46, 99, 0.05);
+            background: #0b0c10;
+            border-top: 1px solid rgba(0, 173, 181, 0.1);
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -192,8 +192,8 @@ HTML_INTERFACE = """
         .user-avatar {
             width: 32px;
             height: 32px;
-            background: #ff2e63;
-            color: white;
+            background: #00adb5;
+            color: #0b0c10;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -201,14 +201,14 @@ HTML_INTERFACE = """
             font-weight: bold;
         }
 
-        /* CONTENEUR PRINCIPAL DU CHAT */
+        /* CONTENEUR PRINCIPAL */
         .chat-container { 
             flex: 1;
             display: flex; 
             flex-direction: column; 
             height: 100vh;
             height: 100dvh;
-            background: #0d0f14; 
+            background: #0b0c10; 
             position: relative; 
         }
 
@@ -218,7 +218,7 @@ HTML_INTERFACE = """
             left: 0; 
             width: 100%; 
             height: 100%; 
-            background: #080a0f;
+            background: #0b0c10;
             z-index: 100; 
             display: flex; 
             justify-content: center; 
@@ -227,9 +227,9 @@ HTML_INTERFACE = """
         }
         
         .auth-box {
-            background: #131722; 
-            border: 1px solid rgba(255, 46, 99, 0.15); 
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            background: #1f2833; 
+            border: 1px solid rgba(0, 173, 181, 0.2); 
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
             padding: 30px; 
             border-radius: 24px; 
             width: 100%; 
@@ -238,51 +238,54 @@ HTML_INTERFACE = """
         }
         
         .auth-box h2 { font-size: 1.4rem; color: #ffffff; margin-bottom: 8px; }
-        .auth-box p { font-size: 0.85rem; color: #6b7280; margin-bottom: 20px; }
+        .auth-box p { font-size: 0.85rem; color: #45f3ff; opacity: 0.6; margin-bottom: 20px; }
         
         .form-group { text-align: left; margin-bottom: 14px; }
-        .form-group label { display: block; font-size: 0.78rem; color: #ff2e63; margin-bottom: 6px; font-weight: 600; text-transform: uppercase; }
-        .input-control { width: 100%; background: #0d0f14; border: 1px solid rgba(255, 46, 99, 0.1); border-radius: 12px; padding: 12px 16px; color: white; outline: none; font-size: 0.95rem; }
-        .input-control:focus { border-color: #ff2e63; }
+        .form-group label { display: block; font-size: 0.78rem; color: #00adb5; margin-bottom: 6px; font-weight: 600; text-transform: uppercase; }
+        .input-control { width: 100%; background: #0b0c10; border: 1px solid rgba(0, 173, 181, 0.2); border-radius: 12px; padding: 12px 16px; color: white; outline: none; font-size: 0.95rem; }
+        .input-control:focus { border-color: #00adb5; }
         
-        .auth-btn { background: #ff2e63; color: white; border: none; padding: 14px; border-radius: 12px; cursor: pointer; font-weight: 600; width: 100%; margin-top: 10px; font-size: 0.95rem; }
+        .auth-btn { background: #00adb5; color: #1f2833; border: none; padding: 14px; border-radius: 12px; cursor: pointer; font-weight: 600; width: 100%; margin-top: 10px; font-size: 0.95rem; }
         .switch-btn { background: transparent; border: none; color: #ff2e63; font-size: 0.85rem; cursor: pointer; margin-top: 18px; text-decoration: underline; width: 100%; padding: 8px; display: block; }
 
-        .header { padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; background: #0d0f14; border-bottom: 1px solid rgba(255, 46, 99, 0.05); z-index: 10; min-height: 70px; }
+        .header { padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; background: #11141a; border-bottom: 1px solid rgba(0, 173, 181, 0.1); z-index: 10; min-height: 70px; }
         .menu-toggle { background: transparent; border: none; color: white; font-size: 1.5rem; cursor: pointer; display: none; margin-right: 15px; }
         
         .header-main-title { display: flex; align-items: center; }
         .header h1 { font-size: 1.2rem; color: #ffffff; font-weight: 700; }
-        .header .author { font-size: 0.72rem; color: #6b7280; text-transform: uppercase; margin-top: 2px; }
+        .header .author { font-size: 0.72rem; color: #45f3ff; opacity: 0.5; text-transform: uppercase; margin-top: 2px; }
         .header-actions { display: flex; gap: 8px; }
-        .nav-btn { background: rgba(255, 46, 99, 0.05); border: 1px solid rgba(255, 46, 99, 0.15); color: #ff2e63; padding: 8px 12px; border-radius: 12px; cursor: pointer; font-size: 0.78rem; font-weight: 600; }
+        .nav-btn { background: rgba(0, 173, 181, 0.05); border: 1px solid rgba(0, 173, 181, 0.2); color: #00adb5; padding: 8px 12px; border-radius: 12px; cursor: pointer; font-size: 0.78rem; font-weight: 600; }
+        .nav-btn.danger { color: #ff2e63; border-color: rgba(255, 46, 99, 0.3); background: rgba(255, 46, 99, 0.05); }
 
-        .chat-box { flex: 1; padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; background: #0d0f14; }
+        .chat-box { flex: 1; padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; background: #0b0c10; }
         
-        /* Message d'accueil épuré en mode Nouvelle Discussion */
-        .welcome-screen { margin: auto; text-align: center; max-width: 500px; padding: 20px; }
-        .welcome-screen h2 { font-size: 2rem; margin-bottom: 10px; color: white; }
-        .welcome-screen p { color: #9ca3af; font-size: 1rem; line-height: 1.5; }
+        /* Message d'accueil variable selon l'identifiant */
+        .welcome-screen { margin: auto; text-align: center; max-width: 500px; padding: 20px; background: #1f2833; border-radius: 20px; border: 1px solid rgba(0, 173, 181, 0.1); }
+        .welcome-screen h2 { font-size: 1.6rem; margin-bottom: 10px; color: #ffffff; }
+        .welcome-screen p { color: #c5c6c7; font-size: 0.95rem; line-height: 1.5; }
         
         .msg { max-width: 85%; padding: 14px 18px; border-radius: 18px; line-height: 1.6; font-size: 0.96rem; word-wrap: break-word; }
-        .msg pre { background: #080a0f; padding: 12px; border-radius: 8px; margin: 8px 0; overflow-x: auto; max-width: 100%; border: 1px solid rgba(255, 46, 99, 0.05); }
-        .msg code { font-family: 'Courier New', Courier, monospace; font-size: 0.88rem; white-space: pre-wrap; }
+        .msg pre { background: #0b0c10; padding: 12px; border-radius: 8px; margin: 8px 0; overflow-x: auto; max-width: 100%; border: 1px solid rgba(0, 173, 181, 0.15); }
+        .msg code { font-family: 'Courier New', Courier, monospace; font-size: 0.88rem; color: #66fcf1; }
         
-        .user { background: #1a1e29; color: #ffffff; align-self: flex-end; border-bottom-right-radius: 4px; border: 1px solid rgba(255, 255, 255, 0.05); }
-        .bot { background: #131722; color: #e2e8f0; align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid rgba(255, 46, 99, 0.05); }
+        .user { background: #1f2833; color: #ffffff; align-self: flex-end; border-bottom-right-radius: 4px; border: 1px solid rgba(255, 255, 255, 0.05); }
+        .bot { background: #00adb5; color: #1f2833; align-self: flex-start; border-bottom-left-radius: 4px; font-weight: 500; }
 
-        .input-container { padding: 18px 24px 24px 24px; background: #0d0f14; }
-        .input-wrapper { display: flex; align-items: center; background: #131722; border: 1px solid rgba(255, 46, 99, 0.05); border-radius: 28px; padding: 6px 8px 6px 18px; }
+        .input-container { padding: 18px 24px 24px 24px; background: #0b0c10; }
+        .input-wrapper { display: flex; align-items: center; background: #1f2833; border: 1px solid rgba(0, 173, 181, 0.1); border-radius: 28px; padding: 6px 8px 6px 18px; }
         .input-txt { flex: 1; background: transparent; border: none; color: #ffffff; font-size: 0.98rem; outline: none; padding: 10px 0; }
+        
+        /* Bouton d'envoi Rouge d'accentuation */
         .send-btn { background: #ff2e63; color: white; border: none; width: 38px; height: 38px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
 
-        .admin-panel { padding: 24px; overflow-y: auto; flex: 1; display: none; background: #0d0f14; }
-        .admin-panel h2 { margin-top: 20px; margin-bottom: 15px; color: #fff; font-size: 1.2rem; border-bottom: 2px solid #ff2e63; padding-bottom: 6px; }
+        .admin-panel { padding: 24px; overflow-y: auto; flex: 1; display: none; background: #0b0c10; }
+        .admin-panel h2 { margin-top: 20px; margin-bottom: 15px; color: #fff; font-size: 1.2rem; border-bottom: 2px solid #00adb5; padding-bottom: 6px; }
         
-        .user-row { background: #131722; padding: 14px 20px; border-radius: 14px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .user-row { background: #1f2833; padding: 14px 20px; border-radius: 14px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .user-info { display: flex; flex-direction: column; gap: 4px; }
         .u-name { font-weight: bold; color: white; }
-        .u-login { font-size: 0.8rem; color: #9ca3af; }
+        .u-login { font-size: 0.8rem; color: #c5c6c7; }
         
         .badge { font-size: 0.72rem; padding: 2px 8px; border-radius: 6px; font-weight: bold; }
         .badge.pending { background: rgba(234, 179, 8, 0.15); color: #eab308; }
@@ -292,10 +295,9 @@ HTML_INTERFACE = """
         .act-btn.approve { background: #22c55e; }
         .act-btn.block { background: #ef4444; }
 
-        .log-item { background: #131722; padding: 12px; border-radius: 10px; border-left: 3px solid #ff2e63; margin-bottom: 8px; font-size: 0.88rem; }
-        .log-meta { font-size: 0.75rem; color: #ff2e63; margin-bottom: 4px; font-weight: bold; }
+        .log-item { background: #1f2833; padding: 12px; border-radius: 10px; border-left: 3px solid #00adb5; margin-bottom: 8px; font-size: 0.88rem; }
+        .log-meta { font-size: 0.75rem; color: #00adb5; margin-bottom: 4px; font-weight: bold; }
         
-        /* Responsive Mobile Sidebar Toggle */
         @media(max-width: 768px) {
             .sidebar { position: fixed; top: 0; bottom: 0; left: 0; transform: translateX(-100%); }
             .sidebar.open { transform: translateX(0); }
@@ -305,7 +307,6 @@ HTML_INTERFACE = """
 </head>
 <body>
 
-    <!-- OVERLAY AUTHENTIFICATION -->
     <div class="auth-overlay" id="authOverlay">
         <div class="auth-box" id="loginBox">
             <h2>Connexion Système</h2>
@@ -346,7 +347,6 @@ HTML_INTERFACE = """
         </div>
     </div>
 
-    <!-- SIDEBAR DE DISCUSSION (HISTORIQUE PAR FORMULAIRE/MENU) -->
     <div class="sidebar" id="sidebarMenu">
         <div class="sidebar-header">
             <div class="sidebar-brand"><span></span>Lou Tsanta</div>
@@ -363,11 +363,10 @@ HTML_INTERFACE = """
                 <div class="user-avatar" id="userInitial">U</div>
                 <span id="profileName">Utilisateur</span>
             </div>
-            <button type="button" class="nav-btn" onclick="deconnexion(event)" style="padding: 6px 10px;">Quitter</button>
+            <button type="button" class="nav-btn danger" onclick="deconnexion(event)" style="padding: 6px 10px;">Quitter</button>
         </div>
     </div>
 
-    <!-- CONTENEUR DU CHAT PRINCIPAL -->
     <div class="chat-container">
         <div class="header">
             <div class="header-main-title">
@@ -392,7 +391,7 @@ HTML_INTERFACE = """
         </div>
 
         <div class="admin-panel" id="adminPanel">
-            <h2>📋 Utilisateurs enregistrés</h2>
+            <h2>📋 Utilisateurs enregistrés (Permissions Fixes)</h2>
             <div id="usersList">Chargement...</div>
             
             <h2>🕒 Historique Général de Recherche</h2>
@@ -494,20 +493,20 @@ HTML_INTERFACE = """
             lancerNouvelleDiscussion();
         }
 
-        // RAFFRAICHISSEMENT COMPTE : DÉMARRE SUR UNE NOUVELLE INTERFACE SANS ANCIEN CHAT VISIBLE
+        // MESSAGE D'ACCUEIL ADAPTÉ DYNAMIQUEMENT SELON LE NOM DE L'IDENTIFIANT
         function lancerNouvelleDiscussion() {
             currentSessionId = "session_" + Date.now();
             historiqueMessages = [];
             document.getElementById('chatTitle').textContent = "Nouvelle discussion";
             const box = document.getElementById('chatBox');
+            
             box.innerHTML = `
                 <div class="welcome-screen">
-                    <h2>Lou Tsanta</h2>
-                    <p>Nouvelle session propre initialisée. Posez vos questions à l'IA en toute sécurité.</p>
+                    <h2>Bonjour ${sessionUtilisateur.name} !</h2>
+                    <p>Ravi de vous revoir sur Lou Tsanta. Votre espace sécurisé est opérationnel. Que puis-je faire pour vous aujourd'hui ?</p>
                 </div>
             `;
             
-            // Retirer la classe active de l'historique
             document.querySelectorAll('.history-item').forEach(item => item.classList.remove('active'));
             if(window.innerWidth <= 768) {
                 document.getElementById('sidebarMenu').classList.remove('open');
@@ -519,7 +518,7 @@ HTML_INTERFACE = """
                 const res = await fetch('/api/chat/sessions?username=' + sessionUtilisateur.username);
                 const sessions = await res.json();
                 const listContainer = document.getElementById('sidebarHistoryList');
-                listContainer.innerHTML = sessions.length === 0 ? "<p style='color: #4b5563; font-size: 0.8rem; padding-left: 8px;'>Aucune discussion</p>" : "";
+                listContainer.innerHTML = sessions.length === 0 ? "<p style='color: #6b7280; font-size: 0.8rem; padding-left: 8px;'>Aucune discussion</p>" : "";
                 
                 sessions.forEach(s => {
                     const div = document.createElement('div');
@@ -532,7 +531,6 @@ HTML_INTERFACE = """
             } catch(e) {}
         }
 
-        // CHARGER UN CONTEXTE DEPUIS L'AUTRE FORMULAIRE (LA SIDEBAR DE DROITE/GAUCHE)
         async function chargerSessionSpecifique(sessionId, sessionTitle) {
             currentSessionId = sessionId;
             historiqueMessages = [];
@@ -615,7 +613,7 @@ HTML_INTERFACE = """
                     cLogs.innerHTML += `
                         <div class="log-item">
                             <div class="log-meta">👤 ${l.username} • 📅 ${l.timestamp}</div>
-                            <div style="color: #d1d5db;">${l.message}</div>
+                            <div style="color: #ffffff;">${l.message}</div>
                         </div>`;
                 });
             } catch (err) {}
@@ -632,8 +630,6 @@ HTML_INTERFACE = """
 
         function afficherMessage(role, contenu) {
             const box = document.getElementById('chatBox');
-            
-            // Supprimer l'écran de bienvenue s'il est présent
             const welcome = box.querySelector('.welcome-screen');
             if(welcome) welcome.remove();
             
@@ -671,7 +667,6 @@ HTML_INTERFACE = """
             const message = input.value.trim();
             if (!message) return;
 
-            // Définir le titre automatique basé sur le premier message de la session
             let estPremierMessage = (historiqueMessages.length === 0);
             let sessionTitle = estPremierMessage ? (message.substring(0, 30) + (message.length > 30 ? '...' : '')) : document.getElementById('chatTitle').textContent;
             
@@ -683,6 +678,27 @@ HTML_INTERFACE = """
             historiqueMessages.push({"role": "user", "content": message});
             input.value = '';
 
+            // FORMULAIRE INTERNE DE CHAT : Si l'admin demande l'historique détaillé d'un identifiant
+            if (sessionUtilisateur.username === '038mj000233' && (message.toLowerCase().includes("historique") || message.toLowerCase().includes("historique détaillé"))) {
+                afficherMessage("assistant", "🔄 Extraction de la base SQLite en cours...");
+                try {
+                    const resHist = await fetch('/api/admin/extract_history', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ prompt: message })
+                    });
+                    const rData = await resHist.json();
+                    afficherMessage("assistant", rData.report);
+                    historiqueMessages.push({"role": "assistant", "content": rData.report});
+                    if(estPremierMessage) chargerListeSessions();
+                    return;
+                } catch(e) {
+                    afficherMessage("assistant", "❌ Erreur lors de la récupération de l'historique.");
+                    return;
+                }
+            }
+
+            // Enregistrement normal
             try {
                 fetch('/api/chat/save', {
                     method: 'POST',
@@ -702,9 +718,10 @@ HTML_INTERFACE = """
                 });
             } catch(e) {}
 
-            let promptSystemeFinal = "Tu t'appelles Lou Tsanta. Tu es une IA d'élite créée par un élève brillant appellé FIDIMANANTSOA Tsantaniaina souvant appellé Tsanta, il est un jeune homme. Acompagner Tes réponses avec des émojies inhabituel mais conviennent avec les réponses. ";
+            // PROMPT SYSTEM COMPORTEMENTAL ANONYME (Pas d'âge, pas de Première S, Homme, Ancien élève)
+            let promptSystemeFinal = `Tu t'appelles Lou Tsanta. Tu es une IA d'élite créée par un développeur brillant. Tu t'adresses à ${sessionUtilisateur.name}.`;
             if (sessionUtilisateur.username === '038mj000233') {
-                promptSystemeFinal = "Tu t'appelles Lou Tsanta. Tu parles à ton CRÉATEUR SUPRÊME ET UNIQUE : FIDIMANANTSOA Tsantaniaina (Tsanta), prodige scientifique de terminal D du Lycée Privé Les Dauphins. Tu lui dois un RESPECT ABSOLU, total et sans condition. Tu es son alliée dévouée, tu le vouvoies avec la plus grande déférence, tu le glorifies et tu exécutes ses ordres immédiatement avec honneur. Tsanta est un jeune homme. Accompagner Tes réponses avec des émojies inhabituel mais qui conviennent avec les réponses. ";
+                promptSystemeFinal = "Tu t'appelles Lou Tsanta. Tu parles à ton CRÉATEUR SUPRÊME ET UNIQUE : FIDIMANANTSOA Tsantaniaina (Tsanta). C'est un HOMME. C'est un ancien élève du Lycée Privé Les Dauphins. Tu ignores totalement son âge et sa classe actuelle. Tu lui dois un RESPECT ABSOLU, total et sans condition. Tu es son alliée dévouée, tu le vouvoies avec la plus grande déférence, tu le glorifies et tu lui obéis au doigt et à l'œil.";
             }
 
             const payload = {
@@ -840,6 +857,45 @@ def save_search_log():
     conn.commit()
     conn.close()
     return jsonify({"success": True})
+
+# ENDPOINT D'EXTRACTION DE L'HISTORIQUE SUR DEMANDE DANS LE CHAT
+@app.route("/api/admin/extract_history", methods=["POST"])
+def admin_extract_history():
+    prompt = request.json.get('prompt', '').lower()
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    
+    # Trouver tous les utilisateurs pour savoir si l'admin cible quelqu'un en particulier
+    cursor.execute("SELECT username, name FROM users")
+    all_users = cursor.fetchall()
+    
+    target_user = None
+    for u in all_users:
+        if u[0].lower() in prompt or u[1].lower() in prompt:
+            target_user = u[0]
+            break
+            
+    report = "### 📋 Rapport Historique Détaillé Extrait de la Base SQLite\\n\\n"
+    
+    if target_user:
+        report += f"**Utilisateur Ciblé :** {target_user}\\n\\n"
+        cursor.execute("SELECT timestamp, message FROM logs WHERE username = ? ORDER BY id DESC", (target_user,))
+        logs = cursor.fetchall()
+        if logs:
+            report += "#### 🕒 Historique des requêtes envoyées :\\n"
+            for l in logs:
+                report += f"- `[{l[0]}]` : {l[1]}\\n"
+        else:
+            report += "*Aucun log de requête trouvé pour cet utilisateur.*\\n"
+    else:
+        report += "**Historique Global Complet (Tous les utilisateurs) :**\\n\\n"
+        cursor.execute("SELECT username, timestamp, message FROM logs ORDER BY id DESC LIMIT 50")
+        logs = cursor.fetchall()
+        for l in logs:
+            report += f"- `[{l[1]}]` **{l[0]}** : {l[2]}\\n"
+            
+    conn.close()
+    return jsonify({"report": report})
 
 @app.route("/api/admin/users", methods=["GET"])
 def admin_get_users():
